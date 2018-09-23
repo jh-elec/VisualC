@@ -1,0 +1,10 @@
+C:\Users\Jan Homann\source\repos\crc\crc\bin\Debug\crc.exe.config
+C:\Users\Jan Homann\source\repos\crc\crc\bin\Debug\crc.exe
+C:\Users\Jan Homann\source\repos\crc\crc\bin\Debug\crc.pdb
+C:\Users\Jan Homann\source\repos\crc\crc\obj\Debug\crc.csprojAssemblyReference.cache
+C:\Users\Jan Homann\source\repos\crc\crc\obj\Debug\crc.Properties.Resources.resources
+C:\Users\Jan Homann\source\repos\crc\crc\obj\Debug\crc.csproj.GenerateResource.cache
+C:\Users\Jan Homann\source\repos\crc\crc\obj\Debug\crc.csproj.CoreCompileInputs.cache
+C:\Users\Jan Homann\source\repos\crc\crc\obj\Debug\crc.exe
+C:\Users\Jan Homann\source\repos\crc\crc\obj\Debug\crc.pdb
+C:\Users\Jan Homann\source\repos\crc\crc\obj\Debug\crc.Form1.resources
