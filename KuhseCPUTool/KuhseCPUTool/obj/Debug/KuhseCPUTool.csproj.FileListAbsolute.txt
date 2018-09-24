@@ -1,0 +1,10 @@
+C:\Users\Hm\Documents\Visual Studio 2017\Projects\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.csprojAssemblyReference.cache
+C:\Users\Hm\Documents\Visual Studio 2017\Projects\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.Form1.resources
+C:\Users\Hm\Documents\Visual Studio 2017\Projects\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.Properties.Resources.resources
+C:\Users\Hm\Documents\Visual Studio 2017\Projects\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.csproj.GenerateResource.cache
+C:\Users\Hm\Documents\Visual Studio 2017\Projects\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.csproj.CoreCompileInputs.cache
+C:\Users\Hm\Documents\Visual Studio 2017\Projects\KuhseCPUTool\KuhseCPUTool\bin\Debug\KuhseCPUTool.exe.config
+C:\Users\Hm\Documents\Visual Studio 2017\Projects\KuhseCPUTool\KuhseCPUTool\bin\Debug\KuhseCPUTool.exe
+C:\Users\Hm\Documents\Visual Studio 2017\Projects\KuhseCPUTool\KuhseCPUTool\bin\Debug\KuhseCPUTool.pdb
+C:\Users\Hm\Documents\Visual Studio 2017\Projects\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.exe
+C:\Users\Hm\Documents\Visual Studio 2017\Projects\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.pdb
