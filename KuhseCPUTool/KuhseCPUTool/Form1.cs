@@ -58,7 +58,7 @@ namespace KuhseCPUTool
         {
             Process P = new Process();
             P.StartInfo.FileName = path;
-            P.StartInfo.Arguments = textBox1.Text;
+            P.StartInfo.Arguments = s19FilePath;
             P.Start();
             ID = P.Id;
         }
@@ -68,27 +68,31 @@ namespace KuhseCPUTool
         }
 
         private void button2_Click(object sender, EventArgs e)
-        {
+        {            
             ProzessErstellen(starprogPath+"\\StarProg.exe");
             System.IntPtr MainHandle = Process.GetProcessById(ID).MainWindowHandle;
             SetForegroundWindow(MainHandle);
             starprogSend(StarprogShortcuts.BLANK_CHECK_PROGRAMM_VERIFY);
-            SetForegroundWindow(MainHandle);
-            starprogSend(StarprogShortcuts.SECURE);
+
+            if (checkBox1.CheckState == CheckState.Checked && checkBox1.Checked)
+            {
+                MessageBox.Show(starprogPath);
+            }
         }
 
         private void starprogSend( StarprogShortcuts cmd )
         {
-            System.Threading.Thread.Sleep(250);
-            SendKeys.Send( starprog_shortcuts[(int)StarprogShortcuts.BLANK_CHECK_PROGRAMM_VERIFY]);
+            System.Threading.Thread.Sleep(500);
+            SendKeys.Send( starprog_shortcuts[(int)cmd]);
         }
 
+        string s19FilePath = null;
         private void button3_Click(object sender, EventArgs e)
         {
             OpenFileDialog path = new OpenFileDialog();
             path.ShowDialog();
-            starprogPath = path.InitialDirectory + path.FileName;
-            textBox1.Text = starprogPath;
+            s19FilePath = path.InitialDirectory + path.FileName;
+            textBox1.Text = s19FilePath;
         }
     }
 }

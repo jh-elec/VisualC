@@ -18,3 +18,13 @@ C:\Users\Jan\Desktop\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUT
 C:\Users\Jan\Desktop\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.csproj.CoreCompileInputs.cache
 C:\Users\Jan\Desktop\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.exe
 C:\Users\Jan\Desktop\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.pdb
+C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\bin\Debug\KuhseCPUTool.exe.config
+C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\bin\Debug\KuhseCPUTool.exe
+C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\bin\Debug\KuhseCPUTool.pdb
+C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.csprojAssemblyReference.cache
+C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.Form1.resources
+C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.Properties.Resources.resources
+C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.csproj.GenerateResource.cache
+C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.csproj.CoreCompileInputs.cache
+C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.exe
+C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\KuhseCPUTool\KuhseCPUTool\obj\Debug\KuhseCPUTool.pdb
