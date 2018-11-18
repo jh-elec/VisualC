@@ -34,7 +34,7 @@ namespace Commando
         public static uint CrcErrorCnt = 0;
         private static int CommandoHeaderIndex = 0;
 
-        private static Byte CmdCrc8CCITTUpdate(Byte inCrc, Byte inData)
+        private Byte CmdCrc8CCITTUpdate(Byte inCrc, Byte inData)
         {
             Byte i = 0;
             Byte data = 0;
@@ -56,7 +56,7 @@ namespace Commando
 
             return data;
         }
-        private static Byte CmdCrc8StrCCITT(string str)
+        private Byte CmdCrc8StrCCITT(string str)
         {
             Byte crc = 0;
             Byte x = 0;
@@ -69,40 +69,12 @@ namespace Commando
             return crc;
         }
 
-        public enum Commando_List_Enum          
-        {
-            CMD_BEGINN_WITH_PARA = 0,
-            CMD_END,
-            CMD_CRC_SIGN,
-            CMD_PARA_SIGN,
-
-            CMD_RELAIS,
-            CMD_INIT,
-            CMD_EEPROM,
-            CMD_CAL,
-            CMD_GET_VOLTAGE,
-            CMD_GET_CURRENT,
-            CMD_SET_ADMIN,
-            CMD_GET_STATE,
-
-            __MAX_COMMANDOS__
-        }
         public enum Data_Typ_Enum               
         {
             DATA_TYP_UINT8,
-            DATA_TYP_INT8,
-
-            DATA_TYP_UCHAR,
-            DATA_TYP_CHAR,
-
             DATA_TYP_UINT16,
-            DATA_TYP_INT16,
-
             DATA_TYP_UINT32,
-            DATA_TYP_INT32,
-
             DATA_TYP_FLOAT,
-
             DATA_TYP_STRING,
 
             __DATA_TYP_MAX_INDEX__
@@ -119,44 +91,6 @@ namespace Commando
             CMD_HEADER_CRC,         // Checksumme von der Message
 
             __CMD_HEADER_ENTRYS__
-        };
-        public enum Id_Codes_Enum               
-        {
-            ID_RELAIS,
-            ID_REINIT,
-            ID_EEPROM,
-            ID_VOLTAGE,
-            ID_CURRENT,
-            ID_CALIBRATION,
-            ID_STATE,
-            ID_ADMIN,
-            ID_STRING_DISPLAY,
-            ID_VERSION,
-
-
-            ID_BOOT_MSG,
-            ID_COMMAND,
-
-
-            __ID_MAX_INDEX__
-        };
-        public enum Return_Codes_Enum           
-        {
-            RETURN_ALL_OK,
-            RETURN_USART_CRC_OK,
-            RETURN_USART_CRC_BAD,
-            RETURN_CMD_OK,
-            RETURN_CMD_BAD,
-            RETURN_ADMIN_OK,
-            RETURN_ADMIN_BAD,
-            RETURN_OVERVOLTAGE_PROTECTION,
-
-            RETURN_CALIBRATION_START,
-
-            RETURN_CHV_ERROR,
-            RETURN_CHC_ERROR,
-
-            __RETURN_MAX_INDEX__
         };
 
         public struct Commando_Struct
@@ -183,7 +117,7 @@ namespace Commando
         public static Commando_Struct CommandoParsed;
 
 
-        public static int       ParseCommandoStart  ( byte[] buffer )           
+        public int       ParseCommandoStart  ( byte[] buffer )           
         {
             int startByte1Index = 0;
             int startByte2Index = 0;
@@ -211,7 +145,7 @@ namespace Commando
             return -1;
         }
 
-        public static void      ParseCommando(byte[] buffer, ref Commando_Struct CmdStruct)
+        public void      ParseCommando(byte[] buffer, ref Commando_Struct CmdStruct)
         {
             CmdStruct.data = new byte[50];
 
@@ -299,7 +233,7 @@ namespace Commando
             }
         }
 
-        public static byte[]    BuildCommandoHeader ( Commando_Struct send )    
+        public byte[]    BuildCommandoHeader ( Commando_Struct send )    
         {
             byte[] cmdMsg = new byte[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + send.dataLen];
 
@@ -347,6 +281,8 @@ namespace Commando
         private SerialPort Client = new SerialPort();
 
         public static ManualResetEvent manualResetEvent = new ManualResetEvent(true);
+
+        public Cmd cmd = new Cmd();
 
         public int Init( string port, int baud)
         {
@@ -496,7 +432,7 @@ namespace Commando
             /*  Kommando Start Parsen
              *  Rückgabewert: - 1 = Kein Start gefunden..
             */
-            int index = Cmd.ParseCommandoStart(buffer);
+            int index = cmd.ParseCommandoStart(buffer);
             if (index != -1)
             {
                 /*  Anzahl der zu empfangenen Bytes auslesen
@@ -521,7 +457,7 @@ namespace Commando
 
             /*  Kommando untersuchen..
             */
-            Cmd.ParseCommando( buffer, ref Cmd.CommandoParsed );
+            cmd.ParseCommando( buffer, ref Cmd.CommandoParsed );
 
             manualResetEvent.Set();
         }
