@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.cmbbx_port = new System.Windows.Forms.ComboBox();
             this.cmbbx_baudrate = new System.Windows.Forms.ComboBox();
@@ -40,10 +41,12 @@
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.label8 = new System.Windows.Forms.Label();
             this.lbl_crc_statistik = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.lbl_info = new System.Windows.Forms.Label();
@@ -56,18 +59,19 @@
             this.label3 = new System.Windows.Forms.Label();
             this.numeric_msg_id = new System.Windows.Forms.NumericUpDown();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.label9 = new System.Windows.Forms.Label();
             this.lbl_was_send = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.richtxtbx_data_was_send = new System.Windows.Forms.RichTextBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkbx_show_messages = new System.Windows.Forms.CheckBox();
             this.tabControl1.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_msg_id)).BeginInit();
             this.tabPage4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // cmbbx_port
@@ -159,6 +163,7 @@
             // tabPage3
             // 
             this.tabPage3.BackColor = System.Drawing.SystemColors.Window;
+            this.tabPage3.Controls.Add(this.checkbx_show_messages);
             this.tabPage3.Controls.Add(this.label8);
             this.tabPage3.Controls.Add(this.lbl_crc_statistik);
             this.tabPage3.Controls.Add(this.label7);
@@ -173,6 +178,15 @@
             this.tabPage3.Size = new System.Drawing.Size(417, 183);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Einstellungen";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(266, 85);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(73, 13);
+            this.label8.TabIndex = 7;
+            this.label8.Text = "Supported by:";
             // 
             // lbl_crc_statistik
             // 
@@ -192,6 +206,7 @@
             this.label7.Size = new System.Drawing.Size(69, 13);
             this.label7.TabIndex = 5;
             this.label7.Text = "CRC Statistik";
+            this.label7.Click += new System.EventHandler(this.label7_Click);
             // 
             // label2
             // 
@@ -210,6 +225,15 @@
             this.label1.Size = new System.Drawing.Size(64, 13);
             this.label1.TabIndex = 3;
             this.label1.Text = "Schnittstelle";
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = global::monsterTool.Properties.Resources.SoftwareLogo_100x100;
+            this.pictureBox1.Location = new System.Drawing.Point(311, 81);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(103, 102);
+            this.pictureBox1.TabIndex = 8;
+            this.pictureBox1.TabStop = false;
             // 
             // tabPage1
             // 
@@ -285,6 +309,7 @@
             this.richtxtbx_message.Size = new System.Drawing.Size(264, 44);
             this.richtxtbx_message.TabIndex = 5;
             this.richtxtbx_message.Text = "";
+            this.richtxtbx_message.KeyDown += new System.Windows.Forms.KeyEventHandler(this.richtxtbx_message_KeyDown);
             // 
             // cmbbx_data_typ
             // 
@@ -327,6 +352,7 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.label9);
             this.tabPage4.Controls.Add(this.lbl_was_send);
             this.tabPage4.Controls.Add(this.button1);
             this.tabPage4.Controls.Add(this.richtxtbx_data_was_send);
@@ -337,6 +363,15 @@
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Gesendet";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(6, 12);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(50, 13);
+            this.label9.TabIndex = 13;
+            this.label9.Text = "Struktur?";
             // 
             // lbl_was_send
             // 
@@ -359,30 +394,24 @@
             // 
             // richtxtbx_data_was_send
             // 
-            this.richtxtbx_data_was_send.Location = new System.Drawing.Point(6, 6);
+            this.richtxtbx_data_was_send.Location = new System.Drawing.Point(6, 28);
             this.richtxtbx_data_was_send.Name = "richtxtbx_data_was_send";
             this.richtxtbx_data_was_send.ReadOnly = true;
-            this.richtxtbx_data_was_send.Size = new System.Drawing.Size(405, 143);
+            this.richtxtbx_data_was_send.Size = new System.Drawing.Size(405, 121);
             this.richtxtbx_data_was_send.TabIndex = 10;
             this.richtxtbx_data_was_send.Text = "";
             // 
-            // label8
+            // checkbx_show_messages
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(266, 85);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(73, 13);
-            this.label8.TabIndex = 7;
-            this.label8.Text = "Supported by:";
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Image = global::monsterTool.Properties.Resources.SoftwareLogo_100x100;
-            this.pictureBox1.Location = new System.Drawing.Point(311, 81);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(103, 102);
-            this.pictureBox1.TabIndex = 8;
-            this.pictureBox1.TabStop = false;
+            this.checkbx_show_messages.AutoSize = true;
+            this.checkbx_show_messages.Checked = true;
+            this.checkbx_show_messages.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkbx_show_messages.Location = new System.Drawing.Point(135, 150);
+            this.checkbx_show_messages.Name = "checkbx_show_messages";
+            this.checkbx_show_messages.Size = new System.Drawing.Size(127, 17);
+            this.checkbx_show_messages.TabIndex = 9;
+            this.checkbx_show_messages.Text = "Benachrichtigungen?";
+            this.checkbx_show_messages.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -395,17 +424,18 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "Kommando Parser";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tabPage1.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_msg_id)).EndInit();
             this.tabPage4.ResumeLayout(false);
             this.tabPage4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -444,6 +474,9 @@
         private System.Windows.Forms.Label lbl_was_send;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.CheckBox checkbx_show_messages;
     }
 }
 

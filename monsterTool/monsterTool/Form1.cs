@@ -13,8 +13,9 @@ namespace monsterTool
 {
     public partial class Form1 : Form
     {
-        Serial  Port    = new Serial();
         Cmd     Parser  = new Cmd();
+        Serial  Port    = new Serial();
+
 
         public Form1()
         {
@@ -100,14 +101,12 @@ namespace monsterTool
                 return;
             }
 
-            tabControl1.SelectTab(1);
-
             if (listView1.Items.Count > 500)
             {
                 listView1.Items.Clear();
             }
 
-            lbl_crc_statistik.Text = "Erfolgreich: " + Cmd.CrcOkCnt.ToString() + "\r\n" + "Fehlgeschlagen: " + Cmd.CrcErrorCnt.ToString();
+            lbl_crc_statistik.Text = "Erfolgreich: " + Parser.CrcOkCnt.ToString() + "\r\n" + "Fehlgeschlagen: " + Parser.CrcErrorCnt.ToString();
 
             ListViewItem cmdItems = new ListViewItem(Cmd.CommandoParsed.id.ToString());
             cmdItems.SubItems.Add(Cmd.CommandoParsed.dataLen.ToString());
@@ -120,145 +119,133 @@ namespace monsterTool
             }
             else
             {
-                cmdItems.SubItems.Add(BitConverter.ToString(Cmd.CommandoParsed.data, 0 , Cmd.CommandoParsed.dataLen));
+                cmdItems.SubItems.Add(BitConverter.ToString(Cmd.CommandoParsed.data, 0 , Cmd.CommandoParsed.dataLen) + " Hex");
             }
 
             listView1.Items.Add(cmdItems);
             listView1.Items[listView1.Items.Count - 1].EnsureVisible();
+
+            if ( checkbx_show_messages.CheckState == CheckState.Checked ) MessageBox.Show("Neue Daten empfangen..");
         }
+
 
         uint Sended = 0;
         private void btn_data_send_Click(object sender, EventArgs e)
         {
-            int messageLength = 0;
-            string[] message = new string[500];
+            string[] message     = richtxtbx_message.Text.Split(new char[] { ',' });
+            int messageLength    = richtxtbx_message.Text.Split(new char[] { ',' }).Length;
+            int messageBytes     = 0;
 
-            if ( richtxtbx_message.TextLength != 0 )
+            switch ( cmbbx_data_typ.SelectedIndex )
             {
-                message = richtxtbx_message.Text.Split(new char[] { ',' });
-                messageLength = richtxtbx_message.Text.Split(new char[] { ',' }).Length;
+                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT8:    { messageBytes = messageLength * sizeof(byte);     }   break;
+                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT16:   { messageBytes = messageLength * sizeof(UInt16);   }   break;
+                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT32:   { messageBytes = messageLength * sizeof(UInt32);   }   break;
+                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_FLOAT:    { messageBytes = messageLength * sizeof(float);    }   break;
+                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_STRING:   { messageBytes = messageLength * sizeof(char);     }   break;
             }
 
-            int CalculatetArraySize = 0;
-            switch( cmbbx_data_typ.SelectedIndex )
+            if (richtxtbx_message.TextLength == 0) messageBytes = 0;
+
+            Cmd.Commando_Struct CommandoToSend = new Cmd.Commando_Struct(messageBytes);
+
+            uint index = 0;
+            for ( uint x = 0; x < messageLength && richtxtbx_message.TextLength > 0; x++ )
             {
-                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT8:
-                {
-                        CalculatetArraySize = messageLength * sizeof(byte);
-                }break;
-
-                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT16:
-                {
-                        CalculatetArraySize = messageLength * sizeof(UInt16);
-                }break;
-                    
-                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT32:
-                {
-                        CalculatetArraySize = messageLength * sizeof(UInt32);
-                }break;
-
-                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_STRING:
-                {
-                        CalculatetArraySize = messageLength * sizeof(char);
-                }break;
-            }
-
-            Cmd.Commando_Struct Commando = new Cmd.Commando_Struct(CalculatetArraySize);
-
-            Commando.id      = (byte)numeric_msg_id.Value;
-            Commando.dataTyp = (byte)cmbbx_data_typ.SelectedIndex;
-
-            int IndexPos = 0;
-            for ( int x = 0; x < messageLength ; x++)
-            {
-                switch ( cmbbx_data_typ.SelectedIndex )
+                switch( cmbbx_data_typ.SelectedIndex )
                 {
                     case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT8:
-                    {
-                        try
                         {
-                            Commando.data[IndexPos++] = byte.Parse(message[x]);
-                        }catch
-                        {
-                            richtxtbx_data_was_send.AppendText("Ungültiger Parameter \r\n");
-                            return;
-                        }
-                        
-                    }break;
+                            try
+                            {
+                                CommandoToSend.data[index++] = Convert.ToByte(message[x]);
+                            }catch
+                            {
+                                MessageBox.Show("Falsches Format");
+                                return;
+                            }
+                            
+                        } break;
 
                     case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT16:
-                    {
-                        try
                         {
-                            UInt16 tmp = UInt16.Parse(message[x]);
-                            Commando.data[IndexPos++]   = (byte)(tmp & 0x00FF);
-                            Commando.data[IndexPos++]  = (byte)((tmp & 0xFF00)>>8);
-                        }catch
-                        {
-                            richtxtbx_data_was_send.AppendText("Ungültiger Parameter \r\n");
-                            return;
-                        }
+                            try
+                            {
+                                UInt16 tmp = Convert.ToUInt16(message[x]);
+                                CommandoToSend.data[index++] = (byte)(tmp & 0x00FF);
+                                CommandoToSend.data[index++] = (byte)((tmp & 0xFF00) >> 8);
+                            }catch
+                            {
+                                MessageBox.Show("Falsches Format");
+                                return;
+                            }
 
-                    }break;
+                        } break;
 
                     case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT32:
-                    {
-                        try
                         {
-                            UInt32 tmp = UInt32.Parse(message[x]);
+                            try
+                            {
+                                UInt32 tmp = Convert.ToUInt32(message[x]);
+                                CommandoToSend.data[index++] = (byte)(tmp & 0x000000FF);
+                                CommandoToSend.data[index++] = (byte)((tmp & 0x0000FF00) >> 8);
+                                CommandoToSend.data[index++] = (byte)((tmp & 0x00FF0000) >> 16);
+                                CommandoToSend.data[index++] = (byte)((tmp & 0xFF000000) >> 26);
+                            }catch
+                            {
+                                MessageBox.Show("Falsches Format");
+                                return;
+                            }
 
-                            Commando.data[IndexPos++] = (byte)(tmp & 0x000000FF);
-                            Commando.data[IndexPos++] = (byte)((tmp & 0x0000FF00) >> 8);
-                            Commando.data[IndexPos++] = (byte)((tmp & 0x00FF0000) >> 16);
-                            Commando.data[IndexPos++] = (byte)((tmp & 0xFF000000) >> 24);
-                        }catch
-                        {
-                            richtxtbx_data_was_send.AppendText("Ungültiger Parameter \r\n");
-                            return;
-                        }
-
-                    }break;
-
-                    case (byte)Cmd.Data_Typ_Enum.DATA_TYP_STRING:
-                    {
-                        try
-                        {
-                            Commando.data = Encoding.ASCII.GetBytes(message[x]);
-                        }catch
-                        {
-                            richtxtbx_data_was_send.AppendText("Ungültiger Parameter \r\n");
-                            return;
-                        }
-                            
-                    }break;
+                        } break;
 
                     case (byte)Cmd.Data_Typ_Enum.DATA_TYP_FLOAT:
-                    {
-                        try
                         {
-                            float tmp = Convert.ToSingle(message[x]);
-                            Commando.data = BitConverter.GetBytes(tmp);
-                        }catch
-                        {
-                            richtxtbx_data_was_send.AppendText("Ungültiger Parameter \r\n");
-                            return;
-                        }
-                    }break;
+                            try
+                            {
+                                float tmp = Convert.ToSingle(message[x]);
+                                CommandoToSend.data = BitConverter.GetBytes(tmp);
+                            }catch
+                            {
+                                MessageBox.Show("Falsches Format");
+                                return;
+                            }
 
-                    default:
-                    {
-                            IndexPos = 0;
-                    }break;
+                        } break;
+
+                    case (byte)Cmd.Data_Typ_Enum.DATA_TYP_STRING:
+                        {
+                            try
+                            {
+                                CommandoToSend.data = Encoding.ASCII.GetBytes(message[x]);
+                            }catch
+                            {
+                                MessageBox.Show("Falsches Format");
+                                return;
+                            }
+
+                        } break;
                 }
             }
 
-            Commando.dataLen = (byte)Commando.data.Length;
+            CommandoToSend.id       = (byte)numeric_msg_id.Value;           // Nachrichten Type
+            CommandoToSend.dataTyp  = (byte)cmbbx_data_typ.SelectedIndex;   // Datentyp der Bytes
+            CommandoToSend.dataLen  = (byte)CommandoToSend.data.Length;     // Länge der gesamten Nachricht
 
-            byte[] SendCommando = Parser.BuildCommandoHeader(Commando);
+            byte[] send = Parser.BuildHeader(CommandoToSend);
 
-            richtxtbx_data_was_send.AppendText(BitConverter.ToString(SendCommando, 0) + "\r\n");
+            Port.WriteCommando(send);
+          
+            richtxtbx_data_was_send.AppendText( "Header: " + BitConverter.ToString(send, 0 , 8) + "   -   ");
 
-            Port.WriteCommando(SendCommando);
+            if ( messageBytes > 0 )
+            {
+                richtxtbx_data_was_send.AppendText("Nutzdaten: " + BitConverter.ToString(send, 8, CommandoToSend.dataLen) + "\r\n");
+            }
+            else
+            {
+                richtxtbx_data_was_send.AppendText("Nutzdaten: -\r\n");
+            }
 
             Sended++;
             lbl_was_send.Text = "Gesendet: " + Sended.ToString();
@@ -326,6 +313,21 @@ namespace monsterTool
             Sended = 0;
             lbl_was_send.Text = "Gesendet: 0";
             richtxtbx_data_was_send.Clear();
+        }
+
+        private void richtxtbx_message_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete) richtxtbx_message.Clear();
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+            lbl_crc_statistik.Text = "Erfolgreich: 0\r\nFehlgeschlagen: 0";
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Port.Close();
         }
     }
 }
