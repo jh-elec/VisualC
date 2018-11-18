@@ -1,4 +1,4 @@
-﻿namespace monsterTool
+﻿namespace Interpreter
 {
     partial class Form1
     {
@@ -65,6 +65,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.richtxtbx_data_was_send = new System.Windows.Forms.RichTextBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabControl1.SuspendLayout();
             this.tabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -107,6 +108,7 @@
             this.columnHeader2,
             this.columnHeader3,
             this.columnHeader4,
+            this.columnHeader6,
             this.columnHeader5});
             this.listView1.FullRowSelect = true;
             this.listView1.GridLines = true;
@@ -146,7 +148,7 @@
             // 
             this.columnHeader5.Text = "Nutzbytes";
             this.columnHeader5.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.columnHeader5.Width = 199;
+            this.columnHeader5.Width = 135;
             // 
             // tabControl1
             // 
@@ -413,6 +415,11 @@
             this.richtxtbx_data_was_send.TabIndex = 10;
             this.richtxtbx_data_was_send.Text = "";
             // 
+            // columnHeader6
+            // 
+            this.columnHeader6.Text = "Type";
+            this.columnHeader6.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -420,8 +427,10 @@
             this.BackColor = System.Drawing.SystemColors.Window;
             this.ClientSize = new System.Drawing.Size(449, 233);
             this.Controls.Add(this.tabControl1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Form1";
             this.Text = "Kommando Interpreter";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
@@ -477,6 +486,7 @@
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.CheckBox checkbx_show_messages;
+        private System.Windows.Forms.ColumnHeader columnHeader6;
     }
 }
 

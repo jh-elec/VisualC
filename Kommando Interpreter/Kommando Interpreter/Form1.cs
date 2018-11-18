@@ -9,13 +9,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Commando;
 
-namespace monsterTool
+namespace Interpreter
 {
     public partial class Form1 : Form
     {
-        Cmd     Parser  = new Cmd();
-        Serial  Port    = new Serial();
-
+        static Cmd Parser = new Cmd();
+        Serial Port = new Serial(Parser);
 
         public Form1()
         {
@@ -28,6 +27,7 @@ namespace monsterTool
             {
                 btn_port_open.Text = "Öffnen";
                 Port.Close();
+                Port.Dispose();
                 cmbbx_port.Enabled = true;
                 cmbbx_baudrate.Enabled = true;
             }
@@ -106,14 +106,14 @@ namespace monsterTool
                 listView1.Items.Clear();
             }
 
-            lbl_crc_statistik.Text = "Erfolgreich: " + Parser.CrcOkCnt.ToString() + "\r\n" + "Fehlgeschlagen: " + Parser.CrcErrorCnt.ToString();
+            lbl_crc_statistik.Text = "Erfolgreich: " + Cmd.CrcOkCnt.ToString() + "\r\n" + "Fehlgeschlagen: " + Cmd.CrcErrorCnt.ToString();
 
             ListViewItem cmdItems = new ListViewItem(Cmd.CommandoParsed.id.ToString());
             cmdItems.SubItems.Add(Cmd.CommandoParsed.dataLen.ToString());
             cmdItems.SubItems.Add(Cmd.CommandoParsed.exitcode.ToString());
             cmdItems.SubItems.Add(Cmd.CommandoParsed.crc.ToString());
-
-            if ( Cmd.CommandoParsed.dataTyp == (byte)Cmd.Data_Typ_Enum.DATA_TYP_STRING )
+            cmdItems.SubItems.Add(Cmd.CommandoParsed.dataTyp.ToString());
+            if (Cmd.CommandoParsed.dataTyp == (byte)Cmd.Data_Typ_Enum.DATA_TYP_STRING )
             {
                 cmdItems.SubItems.Add(System.Text.Encoding.UTF8.GetString(Cmd.CommandoParsed.data, 0, Cmd.CommandoParsed.dataLen));
             }
@@ -327,6 +327,7 @@ namespace monsterTool
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            Port.Dispose();
             Port.Close();
         }
     }

@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using System.IO.Ports;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Commando
 {
@@ -14,8 +15,8 @@ namespace Commando
         /* Abbonieren dieses Events von anderen Klassen aus
          * Cmd.NewCommandoPackageEvent += new Cmd.EventDelegate(WriteCommandoToGui);
          */        
-        public  event EventDelegate CrcErrorEvent;
-        public  void CrcErrorEventFunc()
+        public static event EventDelegate CrcErrorEvent;
+        public static void CrcErrorEventFunc()
         {
             // Prüft ob das Event überhaupt einen Abonnenten hat.
             CrcErrorEvent?.Invoke();
@@ -28,13 +29,14 @@ namespace Commando
             NewCommandoPackageEvent?.Invoke();    
         }
         
-        public  bool CrcOk = true;
-        public  uint CrcOkCnt = 0;
-        public  uint CrcErrorCnt = 0;
+        public static bool CrcOk = false;
+        public static bool CrcBad = false;
 
-        private int  HeaderIndex = 0;
+        public static uint CrcOkCnt = 0;
+        public static uint CrcErrorCnt = 0;
+        private static int CommandoHeaderIndex = 0;
 
-        private byte Crc8CCITTUpdate    (byte inCrc, byte inData)   
+        private static Byte CmdCrc8CCITTUpdate(Byte inCrc, Byte inData)
         {
             Byte i = 0;
             Byte data = 0;
@@ -56,30 +58,54 @@ namespace Commando
 
             return data;
         }
-        private byte Crc8StrCCITT       (string str)                
+        private static Byte CmdCrc8StrCCITT(string str)
         {
             Byte crc = 0;
             Byte x = 0;
 
             for (x = 0; x < str.Length; x++)
             {
-                crc = Crc8CCITTUpdate(crc, Convert.ToByte(str[x]));
+                crc = CmdCrc8CCITTUpdate(crc, Convert.ToByte(str[x]));
             }
 
             return crc;
         }
 
+        public enum Commando_List_Enum          
+        {
+            CMD_BEGINN_WITH_PARA = 0,
+            CMD_END,
+            CMD_CRC_SIGN,
+            CMD_PARA_SIGN,
+
+            CMD_RELAIS,
+            CMD_INIT,
+            CMD_EEPROM,
+            CMD_CAL,
+            CMD_GET_VOLTAGE,
+            CMD_GET_CURRENT,
+            CMD_SET_ADMIN,
+            CMD_GET_STATE,
+
+            __MAX_COMMANDOS__
+        }
+
         public enum Data_Typ_Enum               
         {
             DATA_TYP_UINT8,
+
             DATA_TYP_UINT16,
+
             DATA_TYP_UINT32,
+
             DATA_TYP_FLOAT,
+
             DATA_TYP_STRING,
 
             __DATA_TYP_MAX_INDEX__
         };
-        public enum Header_enum                 : byte
+
+        public enum Communication_Header_Enum   : byte
         {
             CMD_HEADER_START_BYTE1, // Kommando Start Byte 1
             CMD_HEADER_START_BYTE2, // .. Byte 2
@@ -93,7 +119,60 @@ namespace Commando
             __CMD_HEADER_ENTRYS__
         };
 
-        public struct Commando_Struct           
+        public enum Id_Codes_Enum               
+        {
+            ID_RELAIS,
+            ID_REINIT,
+            ID_EEPROM,
+            ID_VOLTAGE,
+            ID_CURRENT,
+            ID_CALIBRATION,
+            ID_STATE,
+            ID_ADMIN,
+            ID_STRING_DISPLAY,
+            ID_VERSION,
+
+            ID_CALIBRATION_DATE,
+            ID_SERIALNUMBER,
+            ID_HARDWARE_VERSION,
+
+            ID_PERIOD,
+            ID_PHASE_ANGEL,
+
+            ID_APPAREND_RMS_POWER,
+            ID_APPAREND_ENERGY,
+
+            ID_STPM32_MONITOR_DATA,
+
+            ID_MANUAL_READ_STPM32,
+            ID_MANUAL_WRITE_STPM32,
+
+            ID_BOOT_MSG,
+            ID_COMMAND,
+
+            __ID_MAX_INDEX__
+        };
+
+        public enum Return_Codes_Enum           
+        {
+            RETURN_ALL_OK,
+            RETURN_USART_CRC_OK,
+            RETURN_USART_CRC_BAD,
+            RETURN_CMD_OK,
+            RETURN_CMD_BAD,
+            RETURN_ADMIN_OK,
+            RETURN_ADMIN_BAD,
+            RETURN_OVERVOLTAGE_PROTECTION,
+
+            RETURN_CALIBRATION_START,
+
+            RETURN_CHV_ERROR,
+            RETURN_CHC_ERROR,
+
+            __RETURN_MAX_INDEX__
+        };
+
+        public struct Commando_Struct
         {
             public byte msgLen;
             public byte dataLen;
@@ -115,50 +194,48 @@ namespace Commando
             }
         }
 
-
         public static Commando_Struct CommandoParsed;
 
-
-        public  int     ParseStart  ( byte[] buffer )                               
+        public  int       ParseStart  ( byte[] buffer )           
         {
             int startByte1Index = 0;
             int startByte2Index = 0;
 
-            HeaderIndex   = 0;
+            CommandoHeaderIndex   = 0;
 
             startByte1Index = Array.IndexOf(buffer, (byte)'-', 0);
             startByte2Index = Array.IndexOf(buffer, (byte)'+', 0);
 
             try
             {
-                HeaderIndex = startByte2Index - startByte1Index;
+                CommandoHeaderIndex = startByte2Index - startByte1Index;
             }
             catch( Exception e)
             {
                 Console.WriteLine(e.Message);
             }
 
-            if ( HeaderIndex == 1 )
+            if ( CommandoHeaderIndex == 1 )
             {
-                HeaderIndex = startByte1Index;
+                CommandoHeaderIndex = startByte1Index;
                 return startByte1Index;
             }
 
             return -1;
         }
 
-        public  void    Parse       (byte[] buffer, ref Commando_Struct CmdStruct)  
+        public  void      Parse(byte[] buffer, ref Commando_Struct CmdStruct)
         {
             CmdStruct.data = new byte[50];
 
             try
             {
-                CmdStruct.msgLen    = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_LENGHT ];
-                CmdStruct.dataLen   = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_DATA_LENGHT ];
-                CmdStruct.dataTyp   = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_DATA_TYP];
-                CmdStruct.id        = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_ID];
-                CmdStruct.exitcode  = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_EXITCODE];
-                CmdStruct.crc       = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_CRC];
+                CmdStruct.msgLen    = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_LENGHT ];
+                CmdStruct.dataLen   = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_LENGHT ];
+                CmdStruct.dataTyp   = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP];
+                CmdStruct.id        = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_ID];
+                CmdStruct.exitcode  = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_EXITCODE];
+                CmdStruct.crc       = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_CRC];
             }
             catch
             {
@@ -170,13 +247,13 @@ namespace Commando
             byte[] stream = new byte[8];
             try
             {
-                stream[0] = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_START_BYTE1];
-                stream[1] = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_START_BYTE2 ];
-                stream[2] = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_LENGHT];
-                stream[3] = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_DATA_LENGHT];
-                stream[4] = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_DATA_TYP];
-                stream[5] = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_ID];
-                stream[6] = buffer[HeaderIndex + (byte)Header_enum.CMD_HEADER_EXITCODE];
+                stream[0] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_START_BYTE1];
+                stream[1] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_START_BYTE2 ];
+                stream[2] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_LENGHT];
+                stream[3] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_LENGHT];
+                stream[4] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP];
+                stream[5] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_ID];
+                stream[6] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_EXITCODE];
                 stream[7] = 0; // CRC
             }
             catch
@@ -187,11 +264,11 @@ namespace Commando
             /*	Checksumme vom Header bilden
             */
             byte crc = 0;
-            for ( int x = 0 ; x < (byte)Cmd.Header_enum.__CMD_HEADER_ENTRYS__ ; x++ )
+            for ( int x = 0 ; x < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ ; x++ )
             {
                 try
                 {
-                    crc = Crc8CCITTUpdate(crc, stream[x]);
+                    crc = CmdCrc8CCITTUpdate(crc, stream[x]);
                 }
                 catch(Exception e)
                 {
@@ -207,8 +284,8 @@ namespace Commando
                 {
                     try
                     {
-                        crc = Crc8CCITTUpdate(crc, buffer[(HeaderIndex + (byte)Header_enum.__CMD_HEADER_ENTRYS__) + x ] );
-                        CmdStruct.data[x] = buffer[(HeaderIndex + (byte)Header_enum.__CMD_HEADER_ENTRYS__) + x];
+                        crc = CmdCrc8CCITTUpdate(crc, buffer[(CommandoHeaderIndex + (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__) + x ] );
+                        CmdStruct.data[x] = buffer[(CommandoHeaderIndex + (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__) + x];
                     }
                     catch( Exception e )
                     {
@@ -227,7 +304,7 @@ namespace Commando
             }
             else
             {
-                CrcOk = false;
+                CrcBad = true;
                 CrcErrorCnt++;
 
                 //Event feuern..
@@ -235,41 +312,41 @@ namespace Commando
             }
         }
 
-        public byte[]   BuildHeader ( Commando_Struct send )                        
+        public  byte[]    BuildHeader ( Commando_Struct send )    
         {
-            byte[] cmdMsg = new byte[(byte)Header_enum.__CMD_HEADER_ENTRYS__ + send.dataLen];
+            byte[] cmdMsg = new byte[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + send.dataLen];
 
-            cmdMsg[(int)Header_enum.CMD_HEADER_CRC] = 0;
+            cmdMsg[(int)Communication_Header_Enum.CMD_HEADER_CRC] = 0;
 
-            byte msgLen = (byte)Header_enum.__CMD_HEADER_ENTRYS__;
+            byte msgLen = (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__;
             msgLen += send.dataLen;
 
-            cmdMsg[(byte)Header_enum.CMD_HEADER_START_BYTE1]   = (byte)'-';       // Start Byte 1
-            cmdMsg[(byte)Header_enum.CMD_HEADER_START_BYTE2]   = (byte)'+';        // Start Byte 2 
-            cmdMsg[(byte)Header_enum.CMD_HEADER_LENGHT]        = msgLen;
-            cmdMsg[(byte)Header_enum.CMD_HEADER_DATA_LENGHT]   = send.dataLen;
-            cmdMsg[(byte)Header_enum.CMD_HEADER_DATA_TYP]      = send.dataTyp;
-            cmdMsg[(byte)Header_enum.CMD_HEADER_ID]            = send.id;
-            cmdMsg[(byte)Header_enum.CMD_HEADER_EXITCODE]      = send.exitcode;
-            cmdMsg[(byte)Header_enum.CMD_HEADER_CRC]           = 0;
+            cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_START_BYTE1]   = (byte)'-';       // Start Byte 1
+            cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_START_BYTE2]   = (byte)'+';        // Start Byte 2 
+            cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_LENGHT]        = msgLen;
+            cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_DATA_LENGHT]   = send.dataLen;
+            cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP]      = send.dataTyp;
+            cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_ID]            = send.id;
+            cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_EXITCODE]      = send.exitcode;
+            cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_CRC]           = 0;
 
             byte crc = 0;
 
-            for ( int x = 0; x < (byte)Header_enum.__CMD_HEADER_ENTRYS__; x++)
+            for ( int x = 0; x < (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__; x++)
             {
-                crc = Crc8CCITTUpdate(crc, cmdMsg[x]);
+                crc = CmdCrc8CCITTUpdate(crc, cmdMsg[x]);
             }
 
             if ( send.dataLen > 0 )
             {
                 for ( int x = 0; x < send.dataLen; x++ )
                 {
-                    crc = Crc8CCITTUpdate(crc, send.data[x]);
-                    cmdMsg[(byte)Header_enum.__CMD_HEADER_ENTRYS__ + x] = send.data[x];
+                    crc = CmdCrc8CCITTUpdate(crc, send.data[x]);
+                    cmdMsg[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + x] = send.data[x];
                 }
             }
 
-            cmdMsg[(byte)Header_enum.CMD_HEADER_CRC] = crc;
+            cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_CRC] = crc;
 
             send.crc        = crc;
             send.msgLen     = msgLen;
@@ -280,20 +357,22 @@ namespace Commando
 
     public class Serial
     {
-        private SerialPort Client = new SerialPort();
+        Cmd Parser = null;
 
-        public static ManualResetEvent manualResetEvent = new ManualResetEvent(true);
+        public Serial( Cmd inst )
+        {
+            Parser = inst;
+        }
 
-        private Cmd CommandoParser = new Cmd();
+        private static SerialPort Client = new SerialPort();
 
-        public int Init( string port, int baud)
+        public  int Init( string port, int baud)
         {
             if (!Client.IsOpen)
             {
                 if ( port.Contains("COM") != false && port != null )
                 {
                     Client.PortName = port;
-                    
                 }
                 else
                 {
@@ -307,13 +386,15 @@ namespace Commando
                 return -2;
             }
 
+            Client.ReceivedBytesThreshold = 1;
+
             /// Event abbonieren
             Client.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(Client_DataReceived);
 
             return 0;
         }
 
-        public void Open()
+        public  void Open()
         {
             if (!Client.IsOpen)
             {
@@ -323,7 +404,7 @@ namespace Commando
             }
         }
 
-        public void Close()
+        public  void Close()
         {
             if (Client.IsOpen)
             {
@@ -332,22 +413,22 @@ namespace Commando
             }
         }
 
-        public bool IsOpen()
+        public  bool IsOpen()
         {
             return Client.IsOpen;
         }
 
-        public int BytesToRead()
+        public  int BytesToRead()
         {
             return Client.BytesToRead;
         }
 
-        public int BytesToWrite()
+        public  int BytesToWrite()
         {
             return Client.BytesToWrite;
         }
 
-        public string ReadLine()
+        public  string ReadLine()
         {
             return Client.ReadLine();
         }
@@ -357,17 +438,17 @@ namespace Commando
             return Client.ReadExisting();
         }
 
-        public void WriteString(string str)
+        public  void WriteString(string str)
         {
             Client.Write(str);
         }
 
-        public void WriteBytes(byte[] data, int index)
+        public  void WriteBytes(byte[] data, int index)
         {
             Client.Write(data, index, data.Length);
         }
 
-        public void WriteCommando( byte[] buff )
+        public  void WriteCommando( byte[] buff )
         {
             if ( !Client.IsOpen ) return;
 
@@ -375,7 +456,7 @@ namespace Commando
             Client.Write("\r\n");
         }
 
-        public UInt32[] GetBaudrates()
+        public  UInt32[] GetBaudrates()
         {
           UInt32[] bauds =
         {
@@ -394,7 +475,7 @@ namespace Commando
             return bauds;
         }
 
-        public string[] GetPortNames()
+        public  string[] GetPortNames()
         {
             int coms = SerialPort.GetPortNames().Length;
             string[] ports = new string[coms];
@@ -413,37 +494,35 @@ namespace Commando
             return ports;
         }
 
-        public void Dispose()
+        public  void Dispose()
         {
             Client.Dispose();
         }
 
-        int length = 0;
-        byte bytesToReceive = 0;
-        byte[] buffer = new byte[100];
+        static int length = 0;
+        static uint bytesToReceive = 0;
+        public byte[] buffer = new byte[500];
 
-        private void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             /*  Empfangene Daten abholen
             */
             try
             {
-                length += Client.Read(buffer, length, 50 );
-            }
-            catch { }
+                length += Client.Read( buffer , length , 250 );
+            }catch{}
             
-
             /*  Kommando Start Parsen
              *  Rückgabewert: - 1 = Kein Start gefunden..
             */
-            int index = CommandoParser.ParseStart(buffer);
+            int index = Parser.ParseStart(buffer);
             if (index != -1)
             {
                 /*  Anzahl der zu empfangenen Bytes auslesen
                     * HIER WIRD NOCH KEIN CRC BERECHNET!
                     * Es könnten Übertragungsfehler nicht erkannt werden..
                 */
-                bytesToReceive = buffer[index + (byte)Cmd.Header_enum.CMD_HEADER_LENGHT];
+                bytesToReceive = buffer[index + (byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT];
             }
 
             /*  Wurden alle Bytes empfangen?
@@ -461,17 +540,13 @@ namespace Commando
 
             /*  Kommando untersuchen..
             */
-            CommandoParser.Parse( buffer, ref Cmd.CommandoParsed );
-
-            manualResetEvent.Set();
+            Parser.Parse( buffer, ref Cmd.CommandoParsed );
         }
 
-        private void CloseSerialOnPortClose()
+        private static void CloseSerialOnPortClose()
         {
             try
             {
-                Client.DiscardInBuffer();
-                Client.DiscardOutBuffer();
                 Client.Close(); //close the serial port
             }
             catch (Exception ex)
