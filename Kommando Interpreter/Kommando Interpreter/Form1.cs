@@ -21,6 +21,15 @@ namespace Interpreter
             InitializeComponent();
         }
 
+        private void StartPing()
+        {
+            Cmd.Commando_Struct ping = new Cmd.Commando_Struct();
+
+            ping.id = 0;
+            byte[] send = Parser.BuildHeader(ping);
+            Port.WriteCommando(send);
+        }
+
         private void btn_port_open_Click(object sender, EventArgs e)
         {
             if (Port.IsOpen())
@@ -41,6 +50,7 @@ namespace Interpreter
                     btn_port_open.Text = "Schließen";
                     cmbbx_port.Enabled = false;
                     cmbbx_baudrate.Enabled = false;
+                    StartPing();
                 }
                 else
                 {
@@ -78,7 +88,7 @@ namespace Interpreter
                 cmbbx_baudrate.Items.Add(baudrates[x].ToString());
             }
 
-            cmbbx_baudrate.SelectedItem = "9600";
+            cmbbx_baudrate.SelectedItem = "115200";
 
             for( int x = 0; x < (int)Cmd.Data_Typ_Enum.__DATA_TYP_MAX_INDEX__; x++ )
             {
@@ -329,6 +339,22 @@ namespace Interpreter
         {
             Port.Dispose();
             Port.Close();
+        }
+
+        private void numeric_msg_id_ValueChanged(object sender, EventArgs e)
+        {
+            switch ( numeric_msg_id.Value )
+                {
+                    case 0:
+                        {
+                            label10.Text = "ID = Ping";
+                        }break;
+
+                default:
+                    {
+                        label10.Text = "";
+                    }break;
+                }
         }
     }
 }

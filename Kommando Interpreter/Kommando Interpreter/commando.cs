@@ -389,7 +389,7 @@ namespace Commando
             Client.ReceivedBytesThreshold = 1;
 
             /// Event abbonieren
-            Client.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(Client_DataReceived);
+            Client.DataReceived += new SerialDataReceivedEventHandler(Client_DataReceived);
 
             return 0;
         }

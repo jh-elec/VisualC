@@ -38,6 +38,7 @@
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
@@ -65,7 +66,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.richtxtbx_data_was_send = new System.Windows.Forms.RichTextBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.label10 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -143,6 +144,11 @@
             this.columnHeader4.Text = "CRC";
             this.columnHeader4.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.columnHeader4.Width = 35;
+            // 
+            // columnHeader6
+            // 
+            this.columnHeader6.Text = "Type";
+            this.columnHeader6.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // columnHeader5
             // 
@@ -263,6 +269,7 @@
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.SystemColors.Window;
+            this.tabPage2.Controls.Add(this.label10);
             this.tabPage2.Controls.Add(this.lbl_info);
             this.tabPage2.Controls.Add(this.btn_data_send);
             this.tabPage2.Controls.Add(this.label6);
@@ -363,6 +370,12 @@
             this.numeric_msg_id.Name = "numeric_msg_id";
             this.numeric_msg_id.Size = new System.Drawing.Size(147, 20);
             this.numeric_msg_id.TabIndex = 0;
+            this.numeric_msg_id.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numeric_msg_id.ValueChanged += new System.EventHandler(this.numeric_msg_id_ValueChanged);
             // 
             // tabPage4
             // 
@@ -415,10 +428,13 @@
             this.richtxtbx_data_was_send.TabIndex = 10;
             this.richtxtbx_data_was_send.Text = "";
             // 
-            // columnHeader6
+            // label10
             // 
-            this.columnHeader6.Text = "Type";
-            this.columnHeader6.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(232, 17);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(0, 13);
+            this.label10.TabIndex = 11;
             // 
             // Form1
             // 
@@ -487,6 +503,7 @@
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.CheckBox checkbx_show_messages;
         private System.Windows.Forms.ColumnHeader columnHeader6;
+        private System.Windows.Forms.Label label10;
     }
 }
 
