@@ -505,13 +505,15 @@ namespace Commando
 
         public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
+            if (Client.BytesToRead < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__) return;
+
             /*  Empfangene Daten abholen
             */
             try
             {
                 length += Client.Read( buffer , length , 250 );
             }catch{}
-            
+
             /*  Kommando Start Parsen
              *  Rückgabewert: - 1 = Kein Start gefunden..
             */

@@ -123,13 +123,18 @@ namespace Interpreter
             cmdItems.SubItems.Add(Cmd.CommandoParsed.exitcode.ToString());
             cmdItems.SubItems.Add(Cmd.CommandoParsed.crc.ToString());
             cmdItems.SubItems.Add(Cmd.CommandoParsed.dataTyp.ToString());
+
             if (Cmd.CommandoParsed.dataTyp == (byte)Cmd.Data_Typ_Enum.DATA_TYP_STRING )
             {
                 cmdItems.SubItems.Add(System.Text.Encoding.UTF8.GetString(Cmd.CommandoParsed.data, 0, Cmd.CommandoParsed.dataLen));
             }
-            else
+            else if ( Cmd.CommandoParsed.dataLen > 0 )
             {
                 cmdItems.SubItems.Add(BitConverter.ToString(Cmd.CommandoParsed.data, 0 , Cmd.CommandoParsed.dataLen) + " Hex");
+            }
+            else
+            {
+                cmdItems.SubItems.Add(BitConverter.ToString(Cmd.CommandoParsed.data, 0, Cmd.CommandoParsed.dataLen) + "-");
             }
 
             listView1.Items.Add(cmdItems);
