@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Commando
 {
@@ -366,6 +367,8 @@ namespace Commando
 
         private static SerialPort Client = new SerialPort();
 
+        private static Stopwatch WatchDog = new Stopwatch();
+
         public  int Init( string port, int baud)
         {
             if (!Client.IsOpen)
@@ -386,7 +389,7 @@ namespace Commando
                 return -2;
             }
 
-            Client.ReceivedBytesThreshold = 1;
+            Client.ReceivedBytesThreshold = 8;
 
             /// Event abbonieren
             Client.DataReceived += new SerialDataReceivedEventHandler(Client_DataReceived);
@@ -505,7 +508,23 @@ namespace Commando
 
         public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            if (Client.BytesToRead < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__) return;
+            WatchDog.Start();
+            try
+            {
+                while (Client.BytesToRead < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__)
+                {
+                    if (WatchDog.Elapsed.Milliseconds > 500)
+                    {
+                        length = 0;
+                        bytesToReceive = 0;
+                        MessageBox.Show("DataReceivedEvent", "Timeout");
+                        WatchDog.Stop();
+                        return;
+                    }
+                }
+            }
+            catch { }
+            WatchDog.Stop();
 
             /*  Empfangene Daten abholen
             */
