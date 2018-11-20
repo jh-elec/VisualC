@@ -197,32 +197,23 @@ namespace Commando
 
         public static Commando_Struct CommandoParsed;
 
-        public  int       ParseStart  ( byte[] buffer )           
+        public static uint ParseStart(byte[] buffer)
         {
             int startByte1Index = 0;
             int startByte2Index = 0;
 
-            CommandoHeaderIndex   = 0;
+            CommandoHeaderIndex = 0;
 
             startByte1Index = Array.IndexOf(buffer, (byte)'-', 0);
             startByte2Index = Array.IndexOf(buffer, (byte)'+', 0);
 
-            try
-            {
-                CommandoHeaderIndex = startByte2Index - startByte1Index;
-            }
-            catch( Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-
-            if ( CommandoHeaderIndex == 1 )
+            if ( ( startByte2Index - startByte1Index) == 1 )
             {
                 CommandoHeaderIndex = startByte1Index;
-                return startByte1Index;
+                return (uint)CommandoHeaderIndex;
             }
-
-            return -1;
+     
+            return 0;
         }
 
         public  void      Parse(byte[] buffer, ref Commando_Struct CmdStruct)
@@ -389,7 +380,7 @@ namespace Commando
                 return -2;
             }
 
-            Client.ReceivedBytesThreshold = 8;
+            Client.ReceivedBytesThreshold = 1;
 
             /// Event abbonieren
             Client.DataReceived += new SerialDataReceivedEventHandler(Client_DataReceived);
@@ -502,66 +493,28 @@ namespace Commando
             Client.Dispose();
         }
 
-        static int length = 0;
-        static uint bytesToReceive = 0;
-        public byte[] buffer = new byte[500];
+        private static int length           = 0;
+        private static uint bytesToReceive  = 0;
+        private static byte[] buffer        = new byte[128];
 
         public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            WatchDog.Start();
-            try
-            {
-                while (Client.BytesToRead < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__)
-                {
-                    if (WatchDog.Elapsed.Milliseconds > 500)
-                    {
-                        length = 0;
-                        bytesToReceive = 0;
-                        MessageBox.Show("DataReceivedEvent", "Timeout");
-                        WatchDog.Stop();
-                        return;
-                    }
-                }
-            }
-            catch { }
-            WatchDog.Stop();
-
             /*  Empfangene Daten abholen
             */
             try
             {
-                length += Client.Read( buffer , length , 250 );
+                length += Client.Read( buffer , length , Client.BytesToRead );
             }catch{}
 
-            /*  Kommando Start Parsen
-             *  Rückgabewert: - 1 = Kein Start gefunden..
-            */
-            int index = Parser.ParseStart(buffer);
-            if (index != -1)
+            uint index = Cmd.ParseStart(buffer);
+
+            if (index > 0)
             {
-                /*  Anzahl der zu empfangenen Bytes auslesen
-                    * HIER WIRD NOCH KEIN CRC BERECHNET!
-                    * Es könnten Übertragungsfehler nicht erkannt werden..
-                */
                 bytesToReceive = buffer[index + (byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT];
             }
 
-            /*  Wurden alle Bytes empfangen?
-                *  Wenn nicht, direkt wieder raus hier!
-            */
-            if (length < bytesToReceive)
-            {
-                return;
-            }
-            else
-            {
-                length = 0;
-                bytesToReceive = 0;
-            }
 
-            /*  Kommando untersuchen..
-            */
-            Parser.Parse( buffer, ref Cmd.CommandoParsed );
+
         }
 
         private static void CloseSerialOnPortClose()
