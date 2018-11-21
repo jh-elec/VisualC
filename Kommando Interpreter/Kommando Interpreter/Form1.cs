@@ -16,6 +16,9 @@ namespace Interpreter
         static Cmd Parser = new Cmd();
         Serial Port = new Serial(Parser);
 
+        private bool NewCommandoReceived = false;
+        private uint NewCommandoCnt = 0;
+
         public Form1()
         {
             InitializeComponent();
@@ -39,6 +42,7 @@ namespace Interpreter
                 Port.Dispose();
                 cmbbx_port.Enabled = true;
                 cmbbx_baudrate.Enabled = true;
+                checkBox1.Checked = false;
             }
             else
             {
@@ -51,10 +55,6 @@ namespace Interpreter
                     cmbbx_port.Enabled = false;
                     cmbbx_baudrate.Enabled = false;
                     StartPing();
-                }
-                else
-                {
-                    MessageBox.Show("Return Code: " + InitState.ToString(), "WSQ - Portmanager", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -140,7 +140,13 @@ namespace Interpreter
             listView1.Items.Add(cmdItems);
             listView1.Items[listView1.Items.Count - 1].EnsureVisible();
 
-            if ( checkbx_show_messages.CheckState == CheckState.Checked ) MessageBox.Show("Neue Daten empfangen..");
+            if (messageBoxAnzeigenToolStripMenuItem.CheckState == CheckState.Checked) this.Show();
+
+            NewCommandoReceived = true;
+
+            NewCommandoCnt++;
+            this.Text = "Kommando Interpreter" + "          " + ">>[" + NewCommandoCnt.ToString() + "]<<" + " " + "Neue(s) Kommando(s) empfangen!";
+            
         }
 
 
@@ -352,7 +358,7 @@ namespace Interpreter
                 {
                     case 0:
                         {
-                            label10.Text = "ID = Ping";
+                            label10.Text = "(Ping)";
                         }break;
 
                 default:
@@ -360,6 +366,72 @@ namespace Interpreter
                         label10.Text = "";
                     }break;
                 }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            if ( checkBox1.CheckState == CheckState.Checked )
+            {
+                SendCycleTimer.Interval = (int)numeric_send_cycle_timer_interval.Value;
+                SendCycleTimer.Enabled = true;
+            }
+            else
+            {
+                SendCycleTimer.Enabled = false;
+            }
+        }
+
+        private void SendCycleTimer_Tick(object sender, EventArgs e)
+        {
+            if (!NewCommandoReceived) return;
+
+            btn_data_send_Click(this, e);
+
+            NewCommandoReceived = false;
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+            string Message = null;
+
+            for ( int x = 0; x < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__; x++ )
+            {
+                Message += "[" + x.ToString() + "]: " + (Cmd.Communication_Header_Enum.CMD_HEADER_START_BYTE1 + x).ToString() + "\r\n";
+            }
+
+            MessageBox.Show
+            (
+                Message , "Kommunikations Header" , MessageBoxButtons.OK , MessageBoxIcon.Information
+            );
+        }
+
+
+        private void messageBoxAnzeigenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (messageBoxAnzeigenToolStripMenuItem.CheckState == CheckState.Unchecked)
+            {
+                messageBoxAnzeigenToolStripMenuItem.Checked = true;
+            }
+            else
+            {
+                messageBoxAnzeigenToolStripMenuItem.Checked = false;
+            }
+        }
+
+        private void inDenTrayToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Hide();
+        }
+
+        private void notifyIcon1_DoubleClick(object sender, EventArgs e)
+        {
+            this.Show();
+        }
+
+        private void Form1_MouseClick(object sender, MouseEventArgs e)
+        {
+            this.Text = "Kommando Interpreter";
+            NewCommandoCnt = 0;
         }
     }
 }
