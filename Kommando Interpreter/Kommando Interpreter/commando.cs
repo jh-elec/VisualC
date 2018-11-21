@@ -291,9 +291,15 @@ namespace Commando
 
         private static SerialPort Client = new SerialPort();
 
-        private static Stopwatch WatchDog = new Stopwatch();
+        public delegate void DataReceived( byte[] buffer , uint length );
+        public static event DataReceived DataReceivedEvent;
 
-        public  int Init( string port, int baud)
+        public static void DataReceivedEventFunc(byte[] buffer , uint length)
+        {
+            DataReceivedEvent?.Invoke(buffer,length);
+        }
+
+        public int Init( string port, int baud)
         {
             if (!Client.IsOpen)
             {
@@ -322,7 +328,7 @@ namespace Commando
             return 0;
         }
 
-        public  void Open()
+        public void Open()
         {
             if (!Client.IsOpen)
             {
@@ -332,7 +338,7 @@ namespace Commando
             }
         }
 
-        public  void Close()
+        public void Close()
         {
             if (Client.IsOpen)
             {
@@ -341,22 +347,22 @@ namespace Commando
             }
         }
 
-        public  bool IsOpen()
+        public bool IsOpen()
         {
             return Client.IsOpen;
         }
 
-        public  int BytesToRead()
+        public int BytesToRead()
         {
             return Client.BytesToRead;
         }
 
-        public  int BytesToWrite()
+        public int BytesToWrite()
         {
             return Client.BytesToWrite;
         }
 
-        public  string ReadLine()
+        public string ReadLine()
         {
             return Client.ReadLine();
         }
@@ -366,17 +372,17 @@ namespace Commando
             return Client.ReadExisting();
         }
 
-        public  void WriteString(string str)
+        public void WriteString(string str)
         {
             Client.Write(str);
         }
 
-        public  void WriteBytes(byte[] data, int index)
+        public void WriteBytes(byte[] data, int index)
         {
             Client.Write(data, index, data.Length);
         }
 
-        public  void WriteCommando( byte[] buff )
+        public void WriteCommando( byte[] buff )
         {
             if ( !Client.IsOpen ) return;
 
@@ -384,26 +390,31 @@ namespace Commando
             Client.Write("\r\n");
         }
 
-        public  UInt32[] GetBaudrates()
+        public UInt32[] GetBaudrates()
         {
-          UInt32[] bauds =
-        {
+            UInt32[] bauds =
+            {
+                50,
+                110,
+                150,
                 300,
-                600,
                 1200,
                 2400,
+                4800,
                 9600,
-                14400,
                 19200,
                 38400,
                 57600,
                 115200,
+                230400,
+                460800,
+                500000
             };
 
             return bauds;
         }
 
-        public  string[] GetPortNames()
+        public string[] GetPortNames()
         {
             int coms = SerialPort.GetPortNames().Length;
             string[] ports = new string[coms];
@@ -422,7 +433,7 @@ namespace Commando
             return ports;
         }
 
-        public  void Dispose()
+        public void Dispose()
         {
             Client.Dispose();
         }
@@ -491,6 +502,7 @@ namespace Commando
                 int ParserResult = Parser.Parse(buffer, ref Cmd.CommandoParsed);
 
                 WriteDebugBuffer(buffer, (int)BytesToReceive, BytesIsReceive, ParserResult);
+                DataReceivedEventFunc(buffer,BytesToReceive);
 
                 BytesIsReceive = 0;
                 BytesToReceive = 0;
@@ -500,8 +512,6 @@ namespace Commando
                 BytesIsReceive = 0;
                 BytesToReceive = 0;
             }
-
-            //ReceivedDataEvent(buffer);
         }
 
         private static void CloseSerialOnPortClose()
@@ -515,7 +525,6 @@ namespace Commando
                 MessageBox.Show(ex.Message); //catch any serial port closing error messages
             }
         }
-
 
         private void WriteDebugBuffer(byte[] buffer, int buffLength, int bytesIsReceived, int crc)
         {
