@@ -62,14 +62,88 @@ namespace Interpreter
 
         private void WriteDecodedBuffer( byte[] buffer , uint length )
         {
+            NewCommandoCnt++;
+
+            decimal[] Converted = Parser.ConvertByteToDecimal(buffer, length);
+
+            string DecStrHeader = null;
+            for ( uint x = 0; x < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__; x++ )
+            {
+                if ( x < ((byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ -1 ))
+                {
+                    DecStrHeader += Converted[x].ToString() + "-";
+                }
+                else
+                {
+                    DecStrHeader += Converted[x].ToString();
+                }  
+            }
+
+            string DecStrParas = null;
+            for (uint x = (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__; x < length; x++)
+            {
+                if (x < (length - 1))
+                {
+                    DecStrParas += Converted[x].ToString() + "-";
+                }
+                else
+                {
+                    DecStrParas += Converted[x].ToString();
+                }
+            }
+
+            ListViewItem cmdItems = new ListViewItem(Cmd.CommandoParsed.id.ToString());
+            cmdItems.SubItems.Add(Cmd.CommandoParsed.dataLen.ToString());
+            cmdItems.SubItems.Add(Cmd.CommandoParsed.exitcode.ToString());
+            cmdItems.SubItems.Add(Cmd.CommandoParsed.crc.ToString());
+            cmdItems.SubItems.Add(Cmd.CommandoParsed.dataTyp.ToString());
+
+            if (Cmd.CommandoParsed.dataTyp == (byte)Cmd.Data_Type_Enum.DATA_TYP_STRING)
+            {
+                cmdItems.SubItems.Add(System.Text.Encoding.UTF8.GetString(Cmd.CommandoParsed.data, 0, Cmd.CommandoParsed.dataLen));
+            }
+            else if (Cmd.CommandoParsed.dataLen > 0)
+            {
+                cmdItems.SubItems.Add(DecStrParas);
+            }
+            else
+            {
+                cmdItems.SubItems.Add("-");
+            }
+
             try
             {
                 richtxtbx_receive_decodet.Invoke(new Action(() =>
                 {
-                    richtxtbx_receive_decodet.AppendText(BitConverter.ToString(buffer,0,(int)length) + "\r\n");
+                    richtxtbx_receive_decodet.AppendText(DecStrHeader + "  -  " + DecStrParas + "\r\n");
                 }
-                )); 
-            }catch
+                ));
+
+                listView1.Invoke( new Action(() =>
+                {
+                    if (listView1.Items.Count > 1500) listView1.Items.Clear();
+                    listView1.Items.Add(cmdItems);
+                    listView1.Items[listView1.Items.Count - 1].EnsureVisible();
+                }   
+                ));
+
+                lbl_crc_statistik.Invoke(new Action(() =>
+                {
+                    lbl_crc_statistik.Text = "Erfolgreich: " + Cmd.CrcOkCnt.ToString() + "\r\n" + "Fehlgeschlagen: " + Cmd.CrcErrorCnt.ToString();
+                }
+                ));
+
+                if (messageBoxAnzeigenToolStripMenuItem.CheckState == CheckState.Checked) this.Show();
+
+                tabControl1.Invoke(new Action(() =>
+                {
+                    if (tabControl1.SelectedIndex != 1 && tabControl1.SelectedIndex != 2)
+                    {
+                        this.Text = "Kommando Interpreter" + "          " + ">>[" + NewCommandoCnt.ToString() + "]<<" + " " + "Neue(s) Kommando(s) empfangen!";
+                    }
+                }));
+            }
+            catch
             {
                 return;
             }
@@ -77,7 +151,6 @@ namespace Interpreter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Cmd.NewCommandoPackageEvent += new Cmd.EventDelegate(WriteToGui);
             Serial.DataReceivedEvent += new Serial.DataReceived(WriteDecodedBuffer);
 
             string[] foundPorts = Port.GetPortNames();
@@ -107,61 +180,11 @@ namespace Interpreter
 
             cmbbx_baudrate.SelectedItem = "115200";
 
-            for( int x = 0; x < (int)Cmd.Data_Typ_Enum.__DATA_TYP_MAX_INDEX__; x++ )
+            for( int x = 0; x < (int)Cmd.Data_Type_Enum.__DATA_TYP_MAX_INDEX__; x++ )
             {
-                cmbbx_data_typ.Items.Add((Cmd.Data_Typ_Enum.DATA_TYP_UINT8 + x).ToString());
+                cmbbx_data_typ.Items.Add((Cmd.Data_Type_Enum.DATA_TYP_UINT8 + x).ToString());
             }
             cmbbx_data_typ.SelectedItem = "DATA_TYP_UINT8";
-        }
-
-
-        private void WriteToGui()
-        {
-            if (InvokeRequired)
-            {
-                try
-                {
-                    Invoke(new MethodInvoker(WriteToGui));
-                }
-                catch {}
-
-                return;
-            }
-
-            if (listView1.Items.Count > 1500) listView1.Items.Clear();
-
-            lbl_crc_statistik.Text = "Erfolgreich: " + Cmd.CrcOkCnt.ToString() + "\r\n" + "Fehlgeschlagen: " + Cmd.CrcErrorCnt.ToString();
-
-            ListViewItem cmdItems = new ListViewItem(Cmd.CommandoParsed.id.ToString());
-            cmdItems.SubItems.Add(Cmd.CommandoParsed.dataLen.ToString());
-            cmdItems.SubItems.Add(Cmd.CommandoParsed.exitcode.ToString());
-            cmdItems.SubItems.Add(Cmd.CommandoParsed.crc.ToString());
-            cmdItems.SubItems.Add(Cmd.CommandoParsed.dataTyp.ToString());
-
-            if (Cmd.CommandoParsed.dataTyp == (byte)Cmd.Data_Typ_Enum.DATA_TYP_STRING )
-            {
-                cmdItems.SubItems.Add(System.Text.Encoding.UTF8.GetString(Cmd.CommandoParsed.data, 0, Cmd.CommandoParsed.dataLen));
-            }
-            else if ( Cmd.CommandoParsed.dataLen > 0 )
-            {
-                cmdItems.SubItems.Add(BitConverter.ToString(Cmd.CommandoParsed.data, 0 , Cmd.CommandoParsed.dataLen) + " Hex");
-            }
-            else
-            {
-                cmdItems.SubItems.Add(BitConverter.ToString(Cmd.CommandoParsed.data, 0, Cmd.CommandoParsed.dataLen) + "-");
-            }
-
-            listView1.Items.Add(cmdItems);
-            listView1.Items[listView1.Items.Count - 1].EnsureVisible();
-
-            if (messageBoxAnzeigenToolStripMenuItem.CheckState == CheckState.Checked) this.Show();
-
-            NewCommandoCnt++;
-
-            if ( tabControl1.SelectedIndex != 1 && tabControl1.SelectedIndex != 2 )
-            {
-                this.Text = "Kommando Interpreter" + "          " + ">>[" + NewCommandoCnt.ToString() + "]<<" + " " + "Neue(s) Kommando(s) empfangen!";   
-            }
         }
 
         private void SendCommando( object sender , EventArgs e )
@@ -172,11 +195,11 @@ namespace Interpreter
 
             switch ( cmbbx_data_typ.SelectedIndex )
             {
-                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT8:    { messageBytes = messageLength * sizeof(byte);     }   break;
-                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT16:   { messageBytes = messageLength * sizeof(UInt16);   }   break;
-                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT32:   { messageBytes = messageLength * sizeof(UInt32);   }   break;
-                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_FLOAT:    { messageBytes = messageLength * sizeof(float);    }   break;
-                case (byte)Cmd.Data_Typ_Enum.DATA_TYP_STRING:   { messageBytes = messageLength * sizeof(char);     }   break;
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT8:    { messageBytes = messageLength * sizeof(byte);     }   break;
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT16:   { messageBytes = messageLength * sizeof(UInt16);   }   break;
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT32:   { messageBytes = messageLength * sizeof(UInt32);   }   break;
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_FLOAT:    { messageBytes = messageLength * sizeof(float);    }   break;
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_STRING:   { messageBytes = messageLength * sizeof(char);     }   break;
             }
 
             if (richtxtbx_message.TextLength == 0) messageBytes = 0;
@@ -188,7 +211,7 @@ namespace Interpreter
             {
                 switch( cmbbx_data_typ.SelectedIndex )
                 {
-                    case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT8:
+                    case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT8:
                         {
                             try
                             {
@@ -201,7 +224,7 @@ namespace Interpreter
                             
                         } break;
 
-                    case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT16:
+                    case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT16:
                         {
                             try
                             {
@@ -216,7 +239,7 @@ namespace Interpreter
 
                         } break;
 
-                    case (byte)Cmd.Data_Typ_Enum.DATA_TYP_UINT32:
+                    case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT32:
                         {
                             try
                             {
@@ -233,7 +256,7 @@ namespace Interpreter
 
                         } break;
 
-                    case (byte)Cmd.Data_Typ_Enum.DATA_TYP_FLOAT:
+                    case (byte)Cmd.Data_Type_Enum.DATA_TYP_FLOAT:
                         {
                             try
                             {
@@ -247,7 +270,7 @@ namespace Interpreter
 
                         } break;
 
-                    case (byte)Cmd.Data_Typ_Enum.DATA_TYP_STRING:
+                    case (byte)Cmd.Data_Type_Enum.DATA_TYP_STRING:
                         {
                             try
                             {

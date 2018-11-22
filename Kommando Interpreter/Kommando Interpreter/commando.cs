@@ -37,7 +37,7 @@ namespace Commando
         public static uint CrcErrorCnt = 0;
         private static int CommandoHeaderIndex = 0;
 
-        private static Byte CmdCrc8CCITTUpdate(Byte inCrc, Byte inData)
+        private byte CmdCrc8CCITTUpdate(Byte inCrc, Byte inData)
         {
             Byte i = 0;
             Byte data = 0;
@@ -59,7 +59,7 @@ namespace Commando
 
             return data;
         }
-        private static Byte CmdCrc8StrCCITT(string str)
+        private byte CmdCrc8StrCCITT(string str)
         {
             Byte crc = 0;
             Byte x = 0;
@@ -72,17 +72,17 @@ namespace Commando
             return crc;
         }
 
-        public enum Data_Typ_Enum               
+        public enum Data_Type_Enum
         {
             DATA_TYP_UINT8,
-
             DATA_TYP_UINT16,
-
             DATA_TYP_UINT32,
-
             DATA_TYP_FLOAT,
-
             DATA_TYP_STRING,
+
+            DATA_TYP_INT8,
+            DATA_TYP_INT16,
+            DATA_TYP_INT32,
 
             __DATA_TYP_MAX_INDEX__
         };
@@ -100,7 +100,6 @@ namespace Commando
 
             __CMD_HEADER_ENTRYS__
         };
-
 
         public struct Commando_Struct
         {
@@ -237,7 +236,7 @@ namespace Commando
             return 0;
         }
 
-        public  byte[]    BuildHeader ( Commando_Struct send )    
+        public byte[] BuildHeader ( Commando_Struct send )
         {
             byte[] cmdMsg = new byte[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + send.dataLen];
 
@@ -277,6 +276,18 @@ namespace Commando
             send.msgLen     = msgLen;
 
             return cmdMsg;
+        }
+
+        public decimal[] ConvertByteToDecimal(byte[] buffer, uint length)
+        {
+            decimal[] convert = new decimal[(int)length];
+
+            for (uint x = 0; x < length; x++)
+            {
+               convert[x] += Convert.ToDecimal(buffer[x]);
+            }
+
+            return convert;
         }
     }
 
@@ -386,8 +397,13 @@ namespace Commando
         {
             if ( !Client.IsOpen ) return;
 
-            Client.Write(buff, 0, buff.Length);
-            Client.Write("\r\n");
+            try
+            {
+                Client.Write(buff, 0, buff.Length);
+                Client.Write("\r\n");
+            }
+            catch { }
+
         }
 
         public UInt32[] GetBaudrates()
@@ -456,11 +472,6 @@ namespace Commando
              *  Checksumme[7]                   : 0..255
              *  Nutzdaten[8..n]                 : 0..255
             */
-
-            if (Client.BytesToRead > buffer.Length)
-            {
-                Client.DiscardInBuffer();
-            }
 
             /*  Empfangene Daten abholen
             */
