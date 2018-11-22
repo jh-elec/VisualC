@@ -4,6 +4,7 @@ using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Text;
 
 namespace Commando
 {
@@ -278,16 +279,148 @@ namespace Commando
             return cmdMsg;
         }
 
-        public decimal[] ConvertByteToDecimal(byte[] buffer, uint length)
+
+  
+        public string ConvertByteToSignedByte( byte[] buffer , uint index , uint length , string delimiter)
         {
-            decimal[] convert = new decimal[(int)length];
+            string convert = null;
 
-            for (uint x = 0; x < length; x++)
+            for ( uint x = 0; x < length; x += sizeof(byte) )
             {
-               convert[x] += Convert.ToDecimal(buffer[x]);
+                if ( x < (length - sizeof(byte)) )
+                {
+                    convert += ((sbyte)buffer[index + x]).ToString() + " , ";
+                }
+                else
+                {
+                    convert += ((sbyte)buffer[index + x]).ToString();
+                }  
             }
-
             return convert;
+        }
+
+        public string ConvertInt16ToInt16( byte[] buffer , uint index , uint length, string delimiter)
+        {
+            string convert = null;
+
+            for (uint x = 0; x < length; x += sizeof(Int16))
+            {
+                Int16 tmp = BitConverter.ToInt16(buffer, (int)(index + x));
+
+                if (x < (length - sizeof(Int16)))
+                {
+                    convert += tmp.ToString() + " , ";
+                }
+                else
+                {
+                    convert += tmp.ToString();
+                }
+            }
+            return convert;
+        }
+
+        public string ConvertInt32ToInt32(byte[] buffer , uint index , uint length, string delimiter)
+        {
+            string convert = null;
+
+            for (uint x = 0; x < length; x += sizeof(Int32))
+            {
+                Int32 tmp = BitConverter.ToInt32(buffer, (int)(index + x));
+
+                if (x < (length - sizeof(Int32)))
+                {
+                    convert += tmp.ToString() + " , ";
+                }
+                else
+                {
+                    convert += tmp.ToString();
+                }
+            }
+            return convert;
+        }
+
+
+        public string ConvertByte( byte[] buffer , uint index , uint length, string delimiter)
+        {
+            string convert = null;
+
+            for (uint x = 0; x < length; x += sizeof(byte))
+            {
+                if (x < (length - sizeof(byte)))
+                {
+                    convert += buffer[(int)index + x].ToString() + " , ";
+                }
+                else
+                {
+                    convert += buffer[(int)index + x].ToString();
+                }
+            }
+            return convert;
+        }
+
+        public string ConvertUInt16(byte[] buffer, uint index, uint length, string delimiter)
+        {
+            string convert = null;
+
+            for (uint x = 0; x < length; x += sizeof(UInt16))
+            {
+                UInt16 tmp = BitConverter.ToUInt16(buffer , (int)(index + x));
+
+                if (x < (length - sizeof(UInt16)))
+                {
+                    convert += tmp.ToString() + " , ";
+                }
+                else
+                {
+                    convert += tmp.ToString();
+                }
+            }
+            return convert;
+        }
+
+        public string ConvertUInt32(byte[] buffer, uint index, uint length, string delimiter)
+        {
+            string convert = null;
+
+            for (uint x = 0; x < length; x += sizeof(UInt32))
+            {
+                UInt32 tmp = BitConverter.ToUInt32(buffer, (int)(index + x));
+
+                if (x < (length - sizeof(UInt32)))
+                {
+                    convert += tmp.ToString() + " , ";
+                }
+                else
+                {
+                    convert += tmp.ToString();
+                }
+            }
+            return convert;
+        }
+
+        public string ConvertToFloat(byte[] buffer, uint index , uint length, string delimiter)
+        {
+            string convert = null;
+
+            for (uint x = 0; x < length; x += sizeof(Single))
+            {
+                Single tmp = BitConverter.ToSingle(buffer, (int)(index + x));
+
+                if (x < (length - sizeof(Single)))
+                {
+                    convert += tmp.ToString() + " , ";
+                }
+                else
+                {
+                    convert += tmp.ToString();
+                }
+            }
+            return convert;
+        }
+
+        public string ConvertToString(byte[] buffer , int index , int length)
+        {
+            return ASCIIEncoding.ASCII.GetString(buffer, index, length);
         }
     }
 
@@ -343,9 +476,13 @@ namespace Commando
         {
             if (!Client.IsOpen)
             {
-                Client.Open();
-                Client.DiscardInBuffer();
-                Client.DiscardOutBuffer();
+                try
+                {
+                    Client.Open();
+                    Client.DiscardInBuffer();
+                    Client.DiscardOutBuffer();
+                }
+                catch { }              
             }
         }
 
@@ -512,7 +649,7 @@ namespace Commando
                 */
                 int ParserResult = Parser.Parse(buffer, ref Cmd.CommandoParsed);
 
-                WriteDebugBuffer(buffer, (int)BytesToReceive, BytesIsReceive, ParserResult);
+                //WriteDebugBuffer(buffer, (int)BytesToReceive, BytesIsReceive, ParserResult);
                 DataReceivedEventFunc(buffer,BytesToReceive);
 
                 BytesIsReceive = 0;

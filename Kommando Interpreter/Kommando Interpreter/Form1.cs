@@ -64,33 +64,64 @@ namespace Interpreter
         {
             NewCommandoCnt++;
 
-            decimal[] Converted = Parser.ConvertByteToDecimal(buffer, length);
-
-            string DecStrHeader = null;
-            for ( uint x = 0; x < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__; x++ )
-            {
-                if ( x < ((byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ -1 ))
-                {
-                    DecStrHeader += Converted[x].ToString() + "-";
-                }
-                else
-                {
-                    DecStrHeader += Converted[x].ToString();
-                }  
-            }
+            string DecStrHeader = Parser.ConvertByte(buffer, 0, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ");
 
             string DecStrParas = null;
-            for (uint x = (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__; x < length; x++)
+
+
+            switch (Cmd.CommandoParsed.dataTyp)
             {
-                if (x < (length - 1))
-                {
-                    DecStrParas += Converted[x].ToString() + "-";
-                }
-                else
-                {
-                    DecStrParas += Converted[x].ToString();
-                }
+                /*  Vorzeichenbehaftete Werte
+                 */
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT8:
+                    {
+                        DecStrParas = Parser.ConvertByteToSignedByte(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                    }break;
+                    
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT16:
+                    {
+                        DecStrParas = Parser.ConvertInt16ToInt16(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                    }break;
+
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT32:
+                    {
+                        DecStrParas = Parser.ConvertInt32ToInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                    }break;
+
+
+                /*  Vorzeichenlose Werte
+                 */
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT8:
+                    {
+                        DecStrParas = Parser.ConvertByte(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                    }break;
+                    
+
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT16:
+                    {
+                        DecStrParas = Parser.ConvertUInt16(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                    }break;
+                    
+
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT32:
+                    {
+                        DecStrParas = Parser.ConvertUInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                    }break;
+                    
+
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_FLOAT:
+                    {
+                        DecStrParas = Parser.ConvertToFloat(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                    }break;
+
+                /*  String
+                 */
+                case (byte)Cmd.Data_Type_Enum.DATA_TYP_STRING:
+                    {
+                        DecStrParas = Parser.ConvertToString(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen);
+                    }break;
             }
+
 
             ListViewItem cmdItems = new ListViewItem(Cmd.CommandoParsed.id.ToString());
             cmdItems.SubItems.Add(Cmd.CommandoParsed.dataLen.ToString());
@@ -98,11 +129,7 @@ namespace Interpreter
             cmdItems.SubItems.Add(Cmd.CommandoParsed.crc.ToString());
             cmdItems.SubItems.Add(Cmd.CommandoParsed.dataTyp.ToString());
 
-            if (Cmd.CommandoParsed.dataTyp == (byte)Cmd.Data_Type_Enum.DATA_TYP_STRING)
-            {
-                cmdItems.SubItems.Add(System.Text.Encoding.UTF8.GetString(Cmd.CommandoParsed.data, 0, Cmd.CommandoParsed.dataLen));
-            }
-            else if (Cmd.CommandoParsed.dataLen > 0)
+            if (Cmd.CommandoParsed.dataLen > 0)
             {
                 cmdItems.SubItems.Add(DecStrParas);
             }
@@ -115,7 +142,7 @@ namespace Interpreter
             {
                 richtxtbx_receive_decodet.Invoke(new Action(() =>
                 {
-                    richtxtbx_receive_decodet.AppendText(DecStrHeader + "  -  " + DecStrParas + "\r\n");
+                    richtxtbx_receive_decodet.AppendText( Parser.ConvertByte(buffer , 0 , (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ") + "   -   " + Parser.ConvertByte(buffer, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__,Cmd.CommandoParsed.dataLen , " , ") + "\r\n");
                 }
                 ));
 
