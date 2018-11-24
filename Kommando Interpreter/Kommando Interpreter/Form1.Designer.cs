@@ -57,6 +57,7 @@
             this.button2 = new System.Windows.Forms.Button();
             this.richtxtbx_receive_decodet = new System.Windows.Forms.RichTextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label6 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.numeric_send_cycle_timer_interval = new System.Windows.Forms.NumericUpDown();
@@ -83,7 +84,7 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.label6 = new System.Windows.Forms.Label();
+            this.bugMeldenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -106,6 +107,7 @@
             this.cmbbx_port.Name = "cmbbx_port";
             this.cmbbx_port.Size = new System.Drawing.Size(121, 21);
             this.cmbbx_port.TabIndex = 0;
+            this.cmbbx_port.TextChanged += new System.EventHandler(this.cmbbx_port_TextChanged);
             // 
             // cmbbx_baudrate
             // 
@@ -369,6 +371,15 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Senden";
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(297, 11);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(144, 52);
+            this.label6.TabIndex = 16;
+            this.label6.Text = "Information:\r\n\r\nNachrichten ID \"0\" ist immer \r\nfür einen Geräte Ping!\r\n";
+            // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.checkBox1);
@@ -554,7 +565,8 @@
             // dateiToolStripMenuItem
             // 
             this.dateiToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.inDenTrayToolStripMenuItem});
+            this.inDenTrayToolStripMenuItem,
+            this.bugMeldenToolStripMenuItem});
             this.dateiToolStripMenuItem.Name = "dateiToolStripMenuItem";
             this.dateiToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.dateiToolStripMenuItem.Text = "Datei";
@@ -562,7 +574,7 @@
             // inDenTrayToolStripMenuItem
             // 
             this.inDenTrayToolStripMenuItem.Name = "inDenTrayToolStripMenuItem";
-            this.inDenTrayToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.inDenTrayToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.inDenTrayToolStripMenuItem.Text = "In den Tray";
             this.inDenTrayToolStripMenuItem.Click += new System.EventHandler(this.inDenTrayToolStripMenuItem_Click);
             // 
@@ -615,14 +627,12 @@
             this.panel3.Size = new System.Drawing.Size(467, 14);
             this.panel3.TabIndex = 10;
             // 
-            // label6
+            // bugMeldenToolStripMenuItem
             // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(297, 11);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(144, 52);
-            this.label6.TabIndex = 16;
-            this.label6.Text = "Information:\r\n\r\nNachrichten ID \"0\" ist immer \r\nfür einen Geräte Ping!\r\n";
+            this.bugMeldenToolStripMenuItem.Name = "bugMeldenToolStripMenuItem";
+            this.bugMeldenToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.bugMeldenToolStripMenuItem.Text = "Bug melden!";
+            this.bugMeldenToolStripMenuItem.Click += new System.EventHandler(this.bugMeldenToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -728,6 +738,7 @@
         private System.Windows.Forms.ProgressBar progressBar2;
         private System.Windows.Forms.Label lbl_receive_cnt;
         private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.ToolStripMenuItem bugMeldenToolStripMenuItem;
     }
 }
 

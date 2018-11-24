@@ -8,16 +8,64 @@ using System.Threading.Tasks;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
-using Commando;
 
 namespace Interpreter
 {
     public partial class Form1 : Form
     {
         static Cmd Parser = new Cmd();
-        Serial Port = new Serial(Parser);
+        Serial  Port = new Serial();
 
         public uint NewCommandoCnt = 0;
+
+        private ComboBox GetComports( string[] ports)
+        {
+            ComboBox Ports = new ComboBox();
+
+            Ports.Items.Add(ports);
+
+            return Ports;
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            Port.Parser = Parser;
+            Serial.DataReceivedEvent += new Serial.DataReceived(WriteDecodedBuffer);
+            
+
+            string[] foundPorts = Port.GetPortNames();
+
+            if (foundPorts == null)
+            {
+                btn_port_open.Enabled = false;
+                cmbbx_baudrate.Enabled = false;
+                cmbbx_port.Enabled = false;
+            }
+            else
+            {
+                for (int x = 0; x < foundPorts.Length; x++)
+                {
+                    cmbbx_port.Items.Add(foundPorts[x].ToString());
+                }
+                cmbbx_port.Text = "";
+                cmbbx_port.SelectedItem = "COM1";
+            }cmbbx_port.Items.Add(">>Refresh<<");
+
+            cmbbx_baudrate.Text = "";
+            uint[] baudrates = Port.GetBaudrates();
+            for (int x = 0; x < baudrates.Length; x++)
+            {
+                cmbbx_baudrate.Items.Add(baudrates[x].ToString());
+            }
+
+            cmbbx_baudrate.SelectedItem = "115200";
+
+            for (int x = 0; x < (int)Cmd.Data_Type_Enum.__DATA_TYP_MAX_INDEX__; x++)
+            {
+                cmbbx_data_typ.Items.Add((Cmd.Data_Type_Enum.DATA_TYP_UINT8 + x).ToString());
+            }
+            cmbbx_data_typ.SelectedItem = "DATA_TYP_UINT8";
+        }
 
         public Form1()
         {
@@ -47,16 +95,12 @@ namespace Interpreter
             }
             else
             {
-                int InitState = Port.Init(cmbbx_port.Text, Convert.ToInt32(cmbbx_baudrate.Text));
-
-                if (InitState == 0)
-                {
-                    Port.Open();
-                    btn_port_open.Text = "Schließen";
-                    cmbbx_port.Enabled = false;
-                    cmbbx_baudrate.Enabled = false;
-                    StartPing();
-                }
+                Port.Init(cmbbx_port.Text, Convert.ToInt32(cmbbx_baudrate.Text));
+                Port.Open();
+                btn_port_open.Text = "Schließen";
+                cmbbx_port.Enabled = false;
+                cmbbx_baudrate.Enabled = false;
+                StartPing();
             }
         }
 
@@ -69,23 +113,23 @@ namespace Interpreter
             string DecStrParas = null;
 
 
-            switch (Cmd.CommandoParsed.dataTyp)
+            switch (Parser.CommandoParsed.dataTyp)
             {
                 /*  Vorzeichenbehaftete Werte
                  */
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT8:
                     {
-                        DecStrParas = Parser.ConvertByteToSignedByte(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertByteToSignedByte(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
                     }break;
                     
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT16:
                     {
-                        DecStrParas = Parser.ConvertInt16ToInt16(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertInt16ToInt16(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
                     }break;
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT32:
                     {
-                        DecStrParas = Parser.ConvertInt32ToInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertInt32ToInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
                     }break;
 
 
@@ -93,43 +137,43 @@ namespace Interpreter
                  */
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT8:
                     {
-                        DecStrParas = Parser.ConvertByte(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertByte(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
                     }break;
                     
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT16:
                     {
-                        DecStrParas = Parser.ConvertUInt16(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertUInt16(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
                     }break;
                     
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT32:
                     {
-                        DecStrParas = Parser.ConvertUInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertUInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
                     }break;
                     
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_FLOAT:
                     {
-                        DecStrParas = Parser.ConvertToFloat(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertToFloat(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
                     }break;
 
                 /*  String
                  */
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_STRING:
                     {
-                        DecStrParas = Parser.ConvertToString(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Cmd.CommandoParsed.dataLen);
+                        DecStrParas = Parser.ConvertToString(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen);
                     }break;
             }
 
 
-            ListViewItem cmdItems = new ListViewItem(Cmd.CommandoParsed.id.ToString());
-            cmdItems.SubItems.Add(Cmd.CommandoParsed.dataLen.ToString());
-            cmdItems.SubItems.Add(Cmd.CommandoParsed.exitcode.ToString());
-            cmdItems.SubItems.Add(Cmd.CommandoParsed.crc.ToString());
-            cmdItems.SubItems.Add(Cmd.CommandoParsed.dataTyp.ToString());
+            ListViewItem cmdItems = new ListViewItem(Parser.CommandoParsed.id.ToString());
+            cmdItems.SubItems.Add(Parser.CommandoParsed.dataLen.ToString());
+            cmdItems.SubItems.Add(Parser.CommandoParsed.exitcode.ToString());
+            cmdItems.SubItems.Add(Parser.CommandoParsed.crc.ToString());
+            cmdItems.SubItems.Add(Parser.CommandoParsed.dataTyp.ToString());
 
-            if (Cmd.CommandoParsed.dataLen > 0)
+            if (Parser.CommandoParsed.dataLen > 0)
             {
                 cmdItems.SubItems.Add(DecStrParas);
             }
@@ -142,7 +186,7 @@ namespace Interpreter
             {
                 richtxtbx_receive_decodet.Invoke(new Action(() =>
                 {
-                    richtxtbx_receive_decodet.AppendText( Parser.ConvertByte(buffer , 0 , (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ") + "   -   " + Parser.ConvertByte(buffer, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__,Cmd.CommandoParsed.dataLen , " , ") + "\r\n");
+                    richtxtbx_receive_decodet.AppendText( Parser.ConvertByte(buffer , 0 , (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ") + "   -   " + Parser.ConvertByte(buffer, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen , " , ") + "\r\n");
                 }
                 ));
 
@@ -156,7 +200,7 @@ namespace Interpreter
 
                 lbl_crc_statistik.Invoke(new Action(() =>
                 {
-                    lbl_crc_statistik.Text = "Erfolgreich: " + Cmd.CrcOkCnt.ToString() + "\r\n" + "Fehlgeschlagen: " + Cmd.CrcErrorCnt.ToString();
+                    lbl_crc_statistik.Text = "Erfolgreich: " + Parser.CrcOkCnt.ToString() + "\r\n" + "Fehlgeschlagen: " + Parser.CrcErrorCnt.ToString();
                 }
                 ));
 
@@ -169,49 +213,12 @@ namespace Interpreter
                         this.Text = "Kommando Interpreter" + "          " + ">>[" + NewCommandoCnt.ToString() + "]<<" + " " + "Neue(s) Kommando(s) empfangen!";
                     }
                 }));
+             
             }
             catch
             {
                 return;
             }
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            Serial.DataReceivedEvent += new Serial.DataReceived(WriteDecodedBuffer);
-
-            string[] foundPorts = Port.GetPortNames();
-
-            if (foundPorts == null)
-            {
-                btn_port_open.Enabled = false;
-                cmbbx_baudrate.Enabled = false;
-                cmbbx_port.Enabled = false;
-            }
-            else
-            {
-                for (int x = 0; x < foundPorts.Length; x++)
-                {
-                    cmbbx_port.Items.Add(foundPorts[x].ToString());
-                }
-                cmbbx_port.Text = "";
-                cmbbx_port.SelectedItem = "COM1";
-            }
-
-            cmbbx_baudrate.Text = "";
-            uint[] baudrates = Port.GetBaudrates();
-            for (int x = 0; x < baudrates.Length; x++)
-            {
-                cmbbx_baudrate.Items.Add(baudrates[x].ToString());
-            }
-
-            cmbbx_baudrate.SelectedItem = "115200";
-
-            for( int x = 0; x < (int)Cmd.Data_Type_Enum.__DATA_TYP_MAX_INDEX__; x++ )
-            {
-                cmbbx_data_typ.Items.Add((Cmd.Data_Type_Enum.DATA_TYP_UINT8 + x).ToString());
-            }
-            cmbbx_data_typ.SelectedItem = "DATA_TYP_UINT8";
         }
 
         private void SendCommando( object sender , EventArgs e )
@@ -528,5 +535,26 @@ namespace Interpreter
             progressBar2.Value = richtxtbx_receive_decodet.Lines.Length;
         }
 
+        private void cmbbx_port_TextChanged(object sender, EventArgs e)
+        {
+            if ( (string)cmbbx_port.SelectedItem == ">>Refresh<<")
+            {
+                cmbbx_port.Items.Clear();
+                string[] foundPorts = Port.GetPortNames();
+                for (int x = 0; x < foundPorts.Length; x++)
+                {
+                    cmbbx_port.Items.Add(foundPorts[x].ToString());
+                }
+                cmbbx_port.Text = "";
+                cmbbx_port.SelectedItem = "COM1";
+                cmbbx_port.Items.Add(">>Refresh<<");
+            }
+        }
+
+        private void bugMeldenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start
+            ("mailto:J.Homann@jh-elec.de?subject=" + "Kommando Interpreter" + " - " + "Ver.:" + Application.ProductVersion + "&body=" + "Mir ist folgendes aufgefallen,");
+        }
     }
 }
