@@ -528,7 +528,7 @@ namespace Interpreter
         private void richtxtbx_receive_decodet_TextChanged(object sender, EventArgs e)
         {
             if (richtxtbx_receive_decodet.Lines.Length >= 1500) richtxtbx_receive_decodet.Clear();
-            lbl_receive_cnt.Text = "Empfangen: " + richtxtbx_receive_decodet.Lines.Length.ToString();
+            lbl_receive_cnt.Text = "Empfangen: " + (richtxtbx_receive_decodet.Lines.Length-1).ToString();
             progressBar2.Maximum = 1500;
             progressBar2.Value = richtxtbx_receive_decodet.Lines.Length;
         }

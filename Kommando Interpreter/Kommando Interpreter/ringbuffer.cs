@@ -2,7 +2,7 @@
 
 public class Ringbuffer
 {
-    private struct Buffer_Struct
+    public struct Buffer_Struct
     {
         public uint	    Actual;  		/**< Current storage location in the circular buffer. */
         public uint	    Next;  			/**< Current retrieval location in the circular buffer. */
@@ -10,7 +10,7 @@ public class Ringbuffer
         public uint     Count;          /**< Number of bytes currently stored in the buffer. */
         public byte[]   buffer;
     }
-    private Buffer_Struct ringbuffer;
+    public Buffer_Struct ringbuffer;
 
 
 	public Ringbuffer(uint size)
@@ -26,6 +26,7 @@ public class Ringbuffer
     public uint GetCount
     {
         get { return ringbuffer.Count; }
+        set { ringbuffer.Count = value; }
     }
 
     public uint GetFreeCount
@@ -59,6 +60,7 @@ public class Ringbuffer
     public byte Get()
     {
         byte ret = ringbuffer.buffer[ringbuffer.Next];
+        ringbuffer.buffer[ringbuffer.Next] = 0;
 
         ringbuffer.Next++;
         if (ringbuffer.Next == ringbuffer.Size )

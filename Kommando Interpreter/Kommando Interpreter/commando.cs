@@ -579,9 +579,60 @@ public class Serial
         Client.Dispose();
     }
 
-    private static int BytesIsReceive = 0;
-    private static uint BytesToReceive = 0;
-    private static byte[] buffer = new byte[256];
+    struct Search_Frame_Struct
+    {
+        public int     Count;
+        public int     LastRead;
+
+        public int[]   Index;
+        public int[]   FrameSize;
+
+        public Search_Frame_Struct( int size )
+        {
+            Count       = 0;
+            LastRead    = 0;
+            Index       = new int[size];
+            FrameSize   = new int[size];
+        }
+    }
+
+    private Search_Frame_Struct SearchCommandoFrame( byte[] buffer , int length )
+    {
+        Search_Frame_Struct FrameInfo = new Search_Frame_Struct(length);
+        uint IndexFound = 0;
+        for ( int x = 0; x < length; x++ )
+        {
+            if ( buffer[x] == (char)'-')
+            {
+                if ( buffer[x+1] == (char)'+')
+                {
+                    FrameInfo.FrameSize[IndexFound]  = buffer[x + 2];
+                    FrameInfo.Index[IndexFound++]    = x;
+                    FrameInfo.Count++;
+                }
+            }
+        }
+        return FrameInfo;
+    }
+
+    private byte[] GetCommandoFrame(ref byte[] buffer, ref Search_Frame_Struct FrameInfo , uint SelectFrame )
+    {
+        if (SelectFrame > FrameInfo.Count || FrameInfo.LastRead > FrameInfo.Count) return null;
+
+        byte[] Frame = new byte[FrameInfo.FrameSize[SelectFrame]];
+
+        for ( int x = 0; x < FrameInfo.FrameSize[SelectFrame]; x++ )
+        {
+            Frame[x] = buffer[FrameInfo.Index[SelectFrame] + x];
+        }
+
+        FrameInfo.LastRead++;
+
+        return Frame;
+    }
+
+    int Length = 0;
+    byte[] buffer = new byte[4096];
 
     public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
@@ -602,48 +653,27 @@ public class Serial
         */
         try
         {
-            BytesIsReceive += Client.Read(buffer, BytesIsReceive, Client.BytesToRead);
+            Length += Client.Read(buffer, Length , Client.BytesToRead);
+
+            Search_Frame_Struct FrameInfo = SearchCommandoFrame(buffer, Length);
+
+            if ( FrameInfo.Count > 0 )
+            {
+                for ( uint x = 0; x < FrameInfo.Count; x++ )
+                {
+                    byte[] Frame = GetCommandoFrame(ref buffer, ref FrameInfo, x);
+                    ParserInstance.Parse(Frame, ref ParserInstance.CommandoParsed);
+                }
+                Length = 0;
+            }
+
         }
         catch
         {
             return;
         }
 
-        /*  Kommando Start Parsen
-        *  Rückgabewert: - 1 = Kein Start gefunden..
-        */
-        int HeaderIndex = ParserInstance.ParseStart(buffer);
-        if (HeaderIndex != -1 )
-        {
-            /*  Anzahl der zu empfangenen Bytes auslesen
-                * HIER WIRD NOCH KEIN CRC BERECHNET!
-                * Es könnten Übertragungsfehler nicht erkannt werden..
-            */
-            BytesToReceive = buffer[HeaderIndex + (byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT];
-        }
 
-        /*  Wurden alle Bytes empfangen?
-            *  Wenn nicht, direkt wieder raus hier!
-        */
-        if (BytesIsReceive < BytesToReceive)
-        {
-            return;
-        }
-
-        if (BytesIsReceive == BytesToReceive)
-        {
-            /*  Kommando untersuchen..
-            */
-            int ParserResult = ParserInstance.Parse(buffer, ref ParserInstance.CommandoParsed);
-
-            BytesIsReceive = 0;
-            BytesToReceive = 0;
-        }
-        else if (BytesIsReceive > BytesToReceive)
-        {
-            BytesIsReceive = 0;
-            BytesToReceive = 0;
-        }
     }
 
     private static void CloseSerialOnPortClose()
