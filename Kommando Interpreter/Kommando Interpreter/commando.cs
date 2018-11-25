@@ -11,23 +11,14 @@ public class Cmd
 {
     /*  Event Delegate
         */
-    public delegate void EventDelegate();
+    public delegate void EventDelegate( byte[] buffer , uint length );
 
-    /* Abbonieren dieses Events von anderen Klassen aus
-        * Cmd.NewCommandoPackageEvent += new Cmd.EventDelegate(WriteCommandoToGui);
-        */        
-    public event EventDelegate CrcErrorEvent;
-    public void CrcErrorEventFunc()
+    public event EventDelegate CommandoFrameEvent;
+
+    public void CommandoFrameEventFnc( byte[] buffer, uint length )
     {
         // Prüft ob das Event überhaupt einen Abonnenten hat.
-        CrcErrorEvent?.Invoke();
-    }
-
-    public event EventDelegate NewCommandoPackageEvent;
-    public void NewCommandoPackageEventFunc()
-    {
-        // Prüft ob das Event überhaupt einen Abonnenten hat.
-        NewCommandoPackageEvent?.Invoke();    
+        CommandoFrameEvent?.Invoke( buffer , length );    
     }
         
     public bool CrcOk = false;
@@ -137,7 +128,7 @@ public class Cmd
 
     public Commando_Struct CommandoParsed;
 
-    public uint ParseStart(byte[] buffer)
+    public int ParseStart(byte[] buffer)
     {
         int startByte1Index = 0;
         int startByte2Index = 0;
@@ -150,10 +141,10 @@ public class Cmd
         if ( ( startByte2Index - startByte1Index) == 1 )
         {
             CommandoHeaderIndex = startByte1Index;
-            return (uint)CommandoHeaderIndex;
+            return CommandoHeaderIndex;
         }
      
-        return 0;
+        return -1;
     }
 
     public int Parse(byte[] buffer, ref Commando_Struct CmdStruct)
@@ -232,15 +223,12 @@ public class Cmd
             CrcOkCnt++;
 
             // Event feuern..
-            NewCommandoPackageEventFunc();
+            CommandoFrameEventFnc( buffer , CmdStruct.msgLen );
         }
         else
         {
             CrcBad = true;
             CrcErrorCnt++;
-
-            //Event feuern..
-            CrcErrorEventFunc();
 
             return -5;
         }
@@ -436,26 +424,20 @@ public class Cmd
 public class Serial
 {
     private Cmd ParserInstance = null;
-    
+
+    System.Windows.Forms.Timer ReadRingBuffTimer = new System.Windows.Forms.Timer();
+
     /// <summary>
     /// Verweis auf den Parser der benutzt werden soll um die eingehenden
     /// Daten zu überprüfen.
     /// </summary>
-    public Cmd Parser
+    public Serial( Cmd Instance )
     {
-        get { return ParserInstance; }
-        set { ParserInstance = value; }
+        ParserInstance = Instance;
     }
+
 
     private static SerialPort Client = new SerialPort();
-
-    public delegate void DataReceived( byte[] buffer , uint length );
-    public static event DataReceived DataReceivedEvent;
-
-    public static void DataReceivedEventFunc(byte[] buffer , uint length)
-    {
-        DataReceivedEvent?.Invoke(buffer,length);
-    }
 
     public void Init( string port, int baud)
     {
@@ -627,12 +609,11 @@ public class Serial
             return;
         }
 
-
         /*  Kommando Start Parsen
-            *  Rückgabewert: - 1 = Kein Start gefunden..
+        *  Rückgabewert: - 1 = Kein Start gefunden..
         */
-        uint HeaderIndex = ParserInstance.ParseStart(buffer);
-        if (HeaderIndex >= 0)
+        int HeaderIndex = ParserInstance.ParseStart(buffer);
+        if (HeaderIndex != -1 )
         {
             /*  Anzahl der zu empfangenen Bytes auslesen
                 * HIER WIRD NOCH KEIN CRC BERECHNET!
@@ -654,9 +635,6 @@ public class Serial
             /*  Kommando untersuchen..
             */
             int ParserResult = ParserInstance.Parse(buffer, ref ParserInstance.CommandoParsed);
-
-            //WriteDebugBuffer(buffer, (int)BytesToReceive, BytesIsReceive, ParserResult);
-            DataReceivedEventFunc(buffer,BytesToReceive);
 
             BytesIsReceive = 0;
             BytesToReceive = 0;

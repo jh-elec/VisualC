@@ -14,7 +14,7 @@ namespace Interpreter
     public partial class Form1 : Form
     {
         static Cmd Parser = new Cmd();
-        Serial  Port = new Serial();
+        Serial  Port = new Serial(Parser);
 
         public uint NewCommandoCnt = 0;
 
@@ -29,9 +29,7 @@ namespace Interpreter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Port.Parser = Parser;
-            Serial.DataReceivedEvent += new Serial.DataReceived(WriteDecodedBuffer);
-            
+            Parser.CommandoFrameEvent += new Cmd.EventDelegate(WriteDecodedBuffer);
 
             string[] foundPorts = Port.GetPortNames();
 
