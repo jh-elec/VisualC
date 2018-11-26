@@ -149,7 +149,7 @@ public class Cmd
 
     public int Parse(byte[] buffer, ref Commando_Struct CmdStruct)
     {
-        CmdStruct.data = new byte[50];
+        CmdStruct.data = new byte[buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_DATA_LENGHT]];
 
         try
         {
@@ -448,7 +448,6 @@ public class Serial
                 Client.PortName = port;
                 Client.BaudRate = baud;
                 Client.ReceivedBytesThreshold = 1;
-
             }
         }
 
@@ -584,15 +583,18 @@ public class Serial
         public int     Count;
         public int     LastRead;
 
+        public int     FrameLengMust;
+
         public int[]   Index;
         public int[]   FrameSize;
 
         public Search_Frame_Struct( int size )
         {
-            Count       = 0;
-            LastRead    = 0;
-            Index       = new int[size];
-            FrameSize   = new int[size];
+            Count           = 0;
+            LastRead        = 0;
+            FrameLengMust   = 0;
+            Index           = new int[size];
+            FrameSize       = new int[size];
         }
     }
 
@@ -600,18 +602,24 @@ public class Serial
     {
         Search_Frame_Struct FrameInfo = new Search_Frame_Struct(length);
         uint IndexFound = 0;
+
         for ( int x = 0; x < length; x++ )
         {
             if ( buffer[x] == (char)'-')
             {
                 if ( buffer[x+1] == (char)'+')
                 {
-                    FrameInfo.FrameSize[IndexFound]  = buffer[x + 2];
-                    FrameInfo.Index[IndexFound++]    = x;
-                    FrameInfo.Count++;
+                    if ( buffer[x+2] > 0 )
+                    {
+                        FrameInfo.FrameLengMust = buffer[x + 2];
+                        FrameInfo.FrameSize[IndexFound] = buffer[x + 2];
+                        FrameInfo.Index[IndexFound++] = x;
+                        FrameInfo.Count++;
+                    }
                 }
             }
         }
+
         return FrameInfo;
     }
 
@@ -625,6 +633,8 @@ public class Serial
         {
             Frame[x] = buffer[FrameInfo.Index[SelectFrame] + x];
         }
+
+        Array.Clear(buffer, FrameInfo.Index[SelectFrame], FrameInfo.FrameSize[SelectFrame]);
 
         FrameInfo.LastRead++;
 
@@ -657,14 +667,20 @@ public class Serial
 
             Search_Frame_Struct FrameInfo = SearchCommandoFrame(buffer, Length);
 
+            if (Length < 8) return;
+
+            if (Length < FrameInfo.FrameLengMust) return;
+
             if ( FrameInfo.Count > 0 )
             {
                 for ( uint x = 0; x < FrameInfo.Count; x++ )
                 {
                     byte[] Frame = GetCommandoFrame(ref buffer, ref FrameInfo, x);
-                    ParserInstance.Parse(Frame, ref ParserInstance.CommandoParsed);
+                    int State = ParserInstance.Parse(Frame, ref ParserInstance.CommandoParsed);
+                    WriteDebugBuffer(Frame, FrameInfo.FrameSize[x], 0, 0);
                 }
                 Length = 0;
+
             }
 
         }
