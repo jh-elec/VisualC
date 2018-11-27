@@ -74,7 +74,7 @@ namespace Interpreter
         {
             Cmd.Commando_Struct ping = new Cmd.Commando_Struct();
 
-            ping.id = 0;
+            ping.MessageID = 0;
             byte[] send = Parser.BuildHeader(ping);
             Port.WriteCommando(send);
             await Task.Delay(500);
@@ -111,23 +111,23 @@ namespace Interpreter
             string DecStrParas = null;
 
 
-            switch (Parser.CommandoParsed.dataTyp)
+            switch (Parser.CommandoParsed.DataType)
             {
                 /*  Vorzeichenbehaftete Werte
                  */
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT8:
                     {
-                        DecStrParas = Parser.ConvertByteToSignedByte(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertByteToSignedByte(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
                     }break;
                     
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT16:
                     {
-                        DecStrParas = Parser.ConvertInt16ToInt16(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertInt16ToInt16(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
                     }break;
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT32:
                     {
-                        DecStrParas = Parser.ConvertInt32ToInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertInt32ToInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
                     }break;
 
 
@@ -135,43 +135,43 @@ namespace Interpreter
                  */
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT8:
                     {
-                        DecStrParas = Parser.ConvertByte(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertByte(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
                     }break;
                     
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT16:
                     {
-                        DecStrParas = Parser.ConvertUInt16(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertUInt16(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
                     }break;
                     
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT32:
                     {
-                        DecStrParas = Parser.ConvertUInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertUInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
                     }break;
                     
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_FLOAT:
                     {
-                        DecStrParas = Parser.ConvertToFloat(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen, " , ");
+                        DecStrParas = Parser.ConvertToFloat(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
                     }break;
 
                 /*  String
                  */
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_STRING:
                     {
-                        DecStrParas = Parser.ConvertToString(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen);
+                        DecStrParas = Parser.ConvertToString(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength);
                     }break;
             }
 
 
-            ListViewItem cmdItems = new ListViewItem(Parser.CommandoParsed.id.ToString());
-            cmdItems.SubItems.Add(Parser.CommandoParsed.dataLen.ToString());
-            cmdItems.SubItems.Add(Parser.CommandoParsed.exitcode.ToString());
-            cmdItems.SubItems.Add(Parser.CommandoParsed.crc.ToString());
-            cmdItems.SubItems.Add(Parser.CommandoParsed.dataTyp.ToString());
+            ListViewItem cmdItems = new ListViewItem(Parser.CommandoParsed.MessageID.ToString());
+            cmdItems.SubItems.Add(Parser.CommandoParsed.DataLength.ToString());
+            cmdItems.SubItems.Add(Parser.CommandoParsed.Exitcode.ToString());
+            cmdItems.SubItems.Add(Parser.CommandoParsed.SlaveCRC.ToString());
+            cmdItems.SubItems.Add(Parser.CommandoParsed.DataType.ToString());
 
-            if (Parser.CommandoParsed.dataLen > 0)
+            if (Parser.CommandoParsed.DataLength > 0)
             {
                 cmdItems.SubItems.Add(DecStrParas);
             }
@@ -184,7 +184,7 @@ namespace Interpreter
             {
                 richtxtbx_receive_decodet.Invoke(new Action(() =>
                 {
-                    richtxtbx_receive_decodet.AppendText( Parser.ConvertByte(buffer , 0 , (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ") + "   -   " + Parser.ConvertByte(buffer, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.dataLen , " , ") + "\r\n");
+                    richtxtbx_receive_decodet.AppendText( Parser.ConvertByte(buffer , 0 , (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ") + "   -   " + Parser.ConvertByte(buffer, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength , " , ") + "\r\n");
                 }
                 ));
 
@@ -247,7 +247,7 @@ namespace Interpreter
                         {
                             try
                             {
-                                CommandoToSend.data[index++] = Convert.ToByte(message[x]);
+                                CommandoToSend.Data[index++] = Convert.ToByte(message[x]);
                             }catch
                             {
                                 MessageBox.Show("Falsches Format");
@@ -261,8 +261,8 @@ namespace Interpreter
                             try
                             {
                                 UInt16 tmp = Convert.ToUInt16(message[x]);
-                                CommandoToSend.data[index++] = (byte)(tmp & 0x00FF);
-                                CommandoToSend.data[index++] = (byte)((tmp & 0xFF00) >> 8);
+                                CommandoToSend.Data[index++] = (byte)(tmp & 0x00FF);
+                                CommandoToSend.Data[index++] = (byte)((tmp & 0xFF00) >> 8);
                             }catch
                             {
                                 MessageBox.Show("Falsches Format");
@@ -276,10 +276,10 @@ namespace Interpreter
                             try
                             {
                                 UInt32 tmp = Convert.ToUInt32(message[x]);
-                                CommandoToSend.data[index++] = (byte)(tmp & 0x000000FF);
-                                CommandoToSend.data[index++] = (byte)((tmp & 0x0000FF00) >> 8);
-                                CommandoToSend.data[index++] = (byte)((tmp & 0x00FF0000) >> 16);
-                                CommandoToSend.data[index++] = (byte)((tmp & 0xFF000000) >> 26);
+                                CommandoToSend.Data[index++] = (byte)(tmp & 0x000000FF);
+                                CommandoToSend.Data[index++] = (byte)((tmp & 0x0000FF00) >> 8);
+                                CommandoToSend.Data[index++] = (byte)((tmp & 0x00FF0000) >> 16);
+                                CommandoToSend.Data[index++] = (byte)((tmp & 0xFF000000) >> 26);
                             }catch
                             {
                                 MessageBox.Show("Falsches Format");
@@ -293,7 +293,7 @@ namespace Interpreter
                             try
                             {
                                 float tmp = Convert.ToSingle(message[x]);
-                                CommandoToSend.data = BitConverter.GetBytes(tmp);
+                                CommandoToSend.Data = BitConverter.GetBytes(tmp);
                             }catch
                             {
                                 MessageBox.Show("Falsches Format");
@@ -306,7 +306,7 @@ namespace Interpreter
                         {
                             try
                             {
-                                CommandoToSend.data = Encoding.ASCII.GetBytes(message[x]);
+                                CommandoToSend.Data = Encoding.ASCII.GetBytes(message[x]);
                             }catch
                             {
                                 MessageBox.Show("Falsches Format");
@@ -317,9 +317,9 @@ namespace Interpreter
                 }
             }
 
-            CommandoToSend.id       = (byte)numeric_msg_id.Value;           // Nachrichten Type
-            CommandoToSend.dataTyp  = (byte)cmbbx_data_typ.SelectedIndex;   // Datentyp der Bytes
-            CommandoToSend.dataLen  = (byte)CommandoToSend.data.Length;     // Länge der gesamten Nachricht
+            CommandoToSend.MessageID    = (byte)numeric_msg_id.Value;           // Nachrichten Type
+            CommandoToSend.DataType     = (byte)cmbbx_data_typ.SelectedIndex;   // Datentyp der Bytes
+            CommandoToSend.DataLength   = (byte)CommandoToSend.Data.Length;     // Länge der gesamten Nachricht
 
             byte[] send = Parser.BuildHeader(CommandoToSend);
 
@@ -329,7 +329,7 @@ namespace Interpreter
 
             if ( messageBytes > 0 )
             {
-                richtxtbx_data_was_send.AppendText("Nutzdaten: " + BitConverter.ToString(send, 8, CommandoToSend.dataLen) + "\r\n");
+                richtxtbx_data_was_send.AppendText("Nutzdaten: " + BitConverter.ToString(send, 8, CommandoToSend.DataLength) + "\r\n");
             }
             else
             {

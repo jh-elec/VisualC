@@ -84,7 +84,6 @@ public class Cmd
         CMD_HEADER_START_BYTE1, // Kommando Start Byte 1
         CMD_HEADER_START_BYTE2, // .. Byte 2
         CMD_HEADER_LENGHT,      // Länge des ganzen Streams
-        CMD_HEADER_DATA_LENGHT, // Länge der Roh Daten
         CMD_HEADER_DATA_TYP,    // (u)char , (u)int8 , (u)int16 , (u)int32
         CMD_HEADER_ID,          // Stream ID
         CMD_HEADER_EXITCODE,    // Exitkode aus Funktionen
@@ -106,23 +105,25 @@ public class Cmd
 
     public struct Commando_Struct
     {
-        public byte msgLen;
-        public byte dataLen;
-        public byte dataTyp;
-        public byte id;
-        public byte exitcode;
-        public byte crc;
-        public byte[] data;
+        public byte DataLength;
+        public byte DataType;
+        public byte MessageID;
+        public byte Exitcode;
+        public byte MasterCRC;
+        public byte SlaveCRC;
 
-        public Commando_Struct( int rawDataSize )
+        public byte[] Data;
+
+        public Commando_Struct( int Size )
         {
-            msgLen      = 0;
-            dataLen     = 0;
-            dataTyp     = 0;
-            id          = 0;
-            exitcode    = 0;
-            crc         = 0;
-            data        = new byte[rawDataSize];
+            DataLength  = 0;
+            DataType    = 0;
+            MessageID   = 0;
+            Exitcode    = 0;
+            MasterCRC   = 0;
+            SlaveCRC    = 0;
+
+            Data = new byte[Size];
         }
     }
 
@@ -147,18 +148,17 @@ public class Cmd
         return -1;
     }
 
-    public int Parse(byte[] buffer, ref Commando_Struct CmdStruct)
+    public int Parse(byte[] buffer, ref Commando_Struct Commando)
     {
-        CmdStruct.data = new byte[buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_DATA_LENGHT]];
+        Commando.Data = new byte[buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT]];
 
         try
         {
-            CmdStruct.msgLen = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_LENGHT];
-            CmdStruct.dataLen = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_LENGHT];
-            CmdStruct.dataTyp = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP];
-            CmdStruct.id = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_ID];
-            CmdStruct.exitcode = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_EXITCODE];
-            CmdStruct.crc = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_CRC];
+            Commando.DataLength = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_LENGHT];
+            Commando.DataType   = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP];
+            Commando.MessageID  = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_ID];
+            Commando.Exitcode   = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_EXITCODE];
+            Commando.SlaveCRC   = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_CRC];
         }
         catch
         {
@@ -172,12 +172,11 @@ public class Cmd
         {
             stream[0] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_START_BYTE1];
             stream[1] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_START_BYTE2];
-            stream[2] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_LENGHT];
-            stream[3] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_LENGHT];
-            stream[4] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP];
-            stream[5] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_ID];
-            stream[6] = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_EXITCODE];
-            stream[7] = 0; // CRC
+            stream[2] = Commando.DataLength;
+            stream[3] = Commando.DataType;
+            stream[4] = Commando.MessageID;
+            stream[5] = Commando.Exitcode;
+            stream[6] = 0; // CRC
         }
         catch
         {
@@ -201,14 +200,14 @@ public class Cmd
 
         /*	Checksumme von Nutzdaten bilden
         */
-        if (CmdStruct.dataLen > 0)
+        if (Commando.DataLength > 0)
         {
-            for (int x = 0; x < CmdStruct.dataLen; x++)
+            for (int x = 0; x < Commando.DataLength; x++)
             {
                 try
                 {
                     crc = CmdCrc8CCITTUpdate(crc, buffer[(CommandoHeaderIndex + (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__) + x]);
-                    CmdStruct.data[x] = buffer[(CommandoHeaderIndex + (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__) + x];
+                    Commando.Data[x] = buffer[(CommandoHeaderIndex + (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__) + x];
                 }
                 catch
                 {
@@ -217,13 +216,13 @@ public class Cmd
             }
         }
 
-        if (crc == CmdStruct.crc)
+        if (crc == Commando.SlaveCRC)
         {
             CrcOk = true;
             CrcOkCnt++;
 
             // Event feuern..
-            CommandoFrameEventFnc( buffer , CmdStruct.msgLen );
+            CommandoFrameEventFnc( buffer , Commando.DataLength );
         }
         else
         {
@@ -238,44 +237,42 @@ public class Cmd
 
     public byte[] BuildHeader ( Commando_Struct send )
     {
-        byte[] cmdMsg = new byte[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + send.dataLen];
+        byte[] Frame = new byte[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + send.DataLength];
 
-        cmdMsg[(int)Communication_Header_Enum.CMD_HEADER_CRC] = 0;
+        Frame[(int)Communication_Header_Enum.CMD_HEADER_CRC] = 0;
 
         byte msgLen = (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__;
-        msgLen += send.dataLen;
+        msgLen += send.DataLength;
 
-        cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_START_BYTE1]   = (byte)'-';       // Start Byte 1
-        cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_START_BYTE2]   = (byte)'+';        // Start Byte 2 
-        cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_LENGHT]        = msgLen;
-        cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_DATA_LENGHT]   = send.dataLen;
-        cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP]      = send.dataTyp;
-        cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_ID]            = send.id;
-        cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_EXITCODE]      = send.exitcode;
-        cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_CRC]           = 0;
+        Frame[(byte)Communication_Header_Enum.CMD_HEADER_START_BYTE1]   = (byte)'-';       // Start Byte 1
+        Frame[(byte)Communication_Header_Enum.CMD_HEADER_START_BYTE2]   = (byte)'+';       // Start Byte 2 
+        Frame[(byte)Communication_Header_Enum.CMD_HEADER_LENGHT]        = msgLen;
+        Frame[(byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP]      = send.DataType;
+        Frame[(byte)Communication_Header_Enum.CMD_HEADER_ID]            = send.MessageID;
+        Frame[(byte)Communication_Header_Enum.CMD_HEADER_EXITCODE]      = send.Exitcode;
+        Frame[(byte)Communication_Header_Enum.CMD_HEADER_CRC]           = 0;
 
         byte crc = 0;
 
         for ( int x = 0; x < (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__; x++)
         {
-            crc = CmdCrc8CCITTUpdate(crc, cmdMsg[x]);
+            crc = CmdCrc8CCITTUpdate(crc, Frame[x]);
         }
 
-        if ( send.dataLen > 0 )
+        if ( send.DataLength > 0 )
         {
-            for ( int x = 0; x < send.dataLen; x++ )
+            for ( int x = 0; x < send.DataLength; x++ )
             {
-                crc = CmdCrc8CCITTUpdate(crc, send.data[x]);
-                cmdMsg[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + x] = send.data[x];
+                crc = CmdCrc8CCITTUpdate(crc, send.Data[x]);
+                Frame[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + x] = send.Data[x];
             }
         }
 
-        cmdMsg[(byte)Communication_Header_Enum.CMD_HEADER_CRC] = crc;
+        Frame[(byte)Communication_Header_Enum.CMD_HEADER_CRC] = crc;
 
-        send.crc        = crc;
-        send.msgLen     = msgLen;
+        send.MasterCRC = crc;
 
-        return cmdMsg;
+        return Frame;
     }
   
     public string ConvertByteToSignedByte( byte[] buffer , uint index , uint length , string delimiter)
@@ -585,73 +582,68 @@ public class Serial
 
         public int     FrameLengMust;
 
-        public int[]   Index;
-        public int[]   FrameSize;
+        public int     Index;
+        public int     FrameSize;
+        public byte[]  Frame;
 
         public Search_Frame_Struct( int size )
         {
-            Count           = 0;
+            Count           = 0; // Wie viele Frames wurden gefunden?
             LastRead        = 0;
-            FrameLengMust   = 0;
-            Index           = new int[size];
-            FrameSize       = new int[size];
+            FrameLengMust   = 0; // Wie groß ist der aktuell zu empfangender Frame?
+            Index           = 0;
+            FrameSize       = 0;
+            Frame           = new byte[size];
         }
     }
 
-    private Search_Frame_Struct SearchCommandoFrame( byte[] buffer , int length )
-    {
-        Search_Frame_Struct FrameInfo = new Search_Frame_Struct(length);
-        uint IndexFound = 0;
 
-        for ( int x = 0; x < length; x++ )
+    private int GetStartOfFrame( byte[] buffer )
+    {
+        int StartOfFrame = 0;
+        
+        for (; StartOfFrame < buffer.Length; StartOfFrame++)
         {
-            if ( buffer[x] == (char)'-')
+            if ( buffer[StartOfFrame] == '-' )
             {
-                if ( buffer[x+1] == (char)'+')
+                if ( buffer[StartOfFrame + 1] == '+')
                 {
-                    if ( buffer[x+2] > 0 )
-                    {
-                        FrameInfo.FrameLengMust = buffer[x + 2];
-                        FrameInfo.FrameSize[IndexFound] = buffer[x + 2];
-                        FrameInfo.Index[IndexFound++] = x;
-                        FrameInfo.Count++;
-                    }
+                    return StartOfFrame;
                 }
             }
         }
 
-        return FrameInfo;
+        return -1;
     }
 
-    private byte[] GetCommandoFrame(ref byte[] buffer, ref Search_Frame_Struct FrameInfo , uint SelectFrame )
+    private int GetEndOfFrame( byte[] buffer )
     {
-        if (SelectFrame > FrameInfo.Count || FrameInfo.LastRead > FrameInfo.Count) return null;
+        int EndOfFrame = 0;
 
-        byte[] Frame = new byte[FrameInfo.FrameSize[SelectFrame]];
-
-        for ( int x = 0; x < FrameInfo.FrameSize[SelectFrame]; x++ )
+        for (; EndOfFrame < buffer.Length; EndOfFrame++)
         {
-            Frame[x] = buffer[FrameInfo.Index[SelectFrame] + x];
+            if ( buffer[EndOfFrame] == '\r' )
+            {
+                if ( buffer[EndOfFrame+1] == '\n')
+                {
+                    return EndOfFrame;
+                }
+            }
         }
 
-        Array.Clear(buffer, FrameInfo.Index[SelectFrame], FrameInfo.FrameSize[SelectFrame]);
-
-        FrameInfo.LastRead++;
-
-        return Frame;
+        return -1;
     }
 
-    int Length = 0;
-    byte[] buffer = new byte[4096];
 
+    int Length = 0;
+    byte[] buffer = new byte[1024];
     public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         /* Protokoll
             *
             *  Startbyte[0]                    : '-'
             *  Startbyte[1]                    : '+'
-            *  Nachrichtenlänge[2]             : 0..255
-            *  Anzahl Nutzdaten[3]             : 0..255
+            *  Nachrichtenlänge[2]             : 0..255 ( 8 davon für den Header , Rest Nutzdaten.. )
             *  Daten Type[4]                   : 0..6
             *  Nachrichten Identifikation[5]   : 0..255
             *  Funktionsrückgabe Code[6]       : 0..255
@@ -664,32 +656,12 @@ public class Serial
         try
         {
             Length += Client.Read(buffer, Length , Client.BytesToRead);
-
-            Search_Frame_Struct FrameInfo = SearchCommandoFrame(buffer, Length);
-
-            if (Length < 8) return;
-
-            if (Length < FrameInfo.FrameLengMust) return;
-
-            if ( FrameInfo.Count > 0 )
-            {
-                for ( uint x = 0; x < FrameInfo.Count; x++ )
-                {
-                    byte[] Frame = GetCommandoFrame(ref buffer, ref FrameInfo, x);
-                    int State = ParserInstance.Parse(Frame, ref ParserInstance.CommandoParsed);
-                    WriteDebugBuffer(Frame, FrameInfo.FrameSize[x], 0, 0);
-                }
-                Length = 0;
-
-            }
-
+            MessageBox.Show(BitConverter.ToString(buffer,0,20));
         }
         catch
         {
             return;
         }
-
-
     }
 
     private static void CloseSerialOnPortClose()
@@ -704,11 +676,11 @@ public class Serial
         }
     }
 
-    private void WriteDebugBuffer(byte[] buffer, int buffLength, int bytesIsReceived, int crc)
+    private void WriteDebugBuffer(byte[] buffer, int length )
     {
         using (System.IO.StreamWriter file = new System.IO.StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "\\log.txt", true))
         {
-            file.WriteLine("[" + buffLength.ToString("00") + "]" + " " + "[" + crc.ToString() + "]" + " " + "[" + bytesIsReceived.ToString("00") + "]" + " " + "[" + DateTime.Now.ToLongTimeString() + "]" + " " + "[" + BitConverter.ToString(buffer, 0, buffLength) + "]");
+            file.WriteLine(BitConverter.ToString(buffer,0, length) + "\r\n");
         }
     }
 }
