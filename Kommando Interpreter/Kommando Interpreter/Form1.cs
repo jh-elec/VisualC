@@ -76,6 +76,8 @@ namespace Interpreter
 
             ping.MessageID = 0;
             byte[] send = Parser.BuildHeader(ping);
+
+            MessageBox.Show(BitConverter.ToString(send));
             Port.WriteCommando(send);
             await Task.Delay(500);
         }
@@ -411,22 +413,6 @@ namespace Interpreter
         {
             SendCommando(sender, e);
         }
-
-        private void label9_Click(object sender, EventArgs e)
-        {
-            string Message = null;
-
-            for ( int x = 0; x < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__; x++ )
-            {
-                Message += "[" + x.ToString() + "]: " + (Cmd.Communication_Header_Enum.CMD_HEADER_START_BYTE1 + x).ToString() + "\r\n";
-            }
-
-            MessageBox.Show
-            (
-                Message , "Kommunikations Header" , MessageBoxButtons.OK , MessageBoxIcon.Information
-            );
-        }
-
 
         private void messageBoxAnzeigenToolStripMenuItem_Click(object sender, EventArgs e)
         {

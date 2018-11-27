@@ -18,3 +18,13 @@ C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\Kommando Interpreter\Komman
 C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.pdb
 C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.csprojAssemblyReference.cache
 C:\Users\Jan Homann\Dropbox\C - Programmieren\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Interpreter.Form1.resources
+C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\bin\Debug\Kommando Interpreter.exe.config
+C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\bin\Debug\Kommando Interpreter.exe
+C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\bin\Debug\Kommando Interpreter.pdb
+C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.csprojAssemblyReference.cache
+C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Interpreter.Form1.resources
+C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Interpreter.Properties.Resources.resources
+C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.csproj.GenerateResource.cache
+C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.csproj.CoreCompileInputs.cache
+C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.exe
+C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.pdb
