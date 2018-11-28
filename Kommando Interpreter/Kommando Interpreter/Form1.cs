@@ -77,7 +77,6 @@ namespace Interpreter
             ping.MessageID = 0;
             byte[] send = Parser.BuildHeader(ping);
 
-            MessageBox.Show(BitConverter.ToString(send));
             Port.WriteCommando(send);
             await Task.Delay(500);
         }
@@ -163,7 +162,7 @@ namespace Interpreter
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_STRING:
                     {
                         DecStrParas = Parser.ConvertToString(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength);
-                    }break;
+                    }break;  
             }
 
 
@@ -327,7 +326,7 @@ namespace Interpreter
 
             Port.WriteCommando(send);
           
-            richtxtbx_data_was_send.AppendText( "Header: " + BitConverter.ToString(send, 0 , 8) + "   -   ");
+            //richtxtbx_data_was_send.AppendText( "Header: " + BitConverter.ToString(send, 0 , 8) + "   -   ");
 
             if ( messageBytes > 0 )
             {

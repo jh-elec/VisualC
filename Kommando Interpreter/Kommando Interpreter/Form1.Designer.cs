@@ -78,13 +78,13 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.dateiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.inDenTrayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.bugMeldenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.meldungenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.messageBoxAnzeigenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.bugMeldenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.tabPage3.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -247,7 +247,7 @@
             this.groupBox2.Controls.Add(this.lbl_crc_statistik);
             this.groupBox2.Location = new System.Drawing.Point(209, 24);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(109, 51);
+            this.groupBox2.Size = new System.Drawing.Size(235, 51);
             this.groupBox2.TabIndex = 9;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "CRC Statistik";
@@ -574,9 +574,16 @@
             // inDenTrayToolStripMenuItem
             // 
             this.inDenTrayToolStripMenuItem.Name = "inDenTrayToolStripMenuItem";
-            this.inDenTrayToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.inDenTrayToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
             this.inDenTrayToolStripMenuItem.Text = "In den Tray";
             this.inDenTrayToolStripMenuItem.Click += new System.EventHandler(this.inDenTrayToolStripMenuItem_Click);
+            // 
+            // bugMeldenToolStripMenuItem
+            // 
+            this.bugMeldenToolStripMenuItem.Name = "bugMeldenToolStripMenuItem";
+            this.bugMeldenToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.bugMeldenToolStripMenuItem.Text = "Bug melden!";
+            this.bugMeldenToolStripMenuItem.Click += new System.EventHandler(this.bugMeldenToolStripMenuItem_Click);
             // 
             // meldungenToolStripMenuItem
             // 
@@ -626,13 +633,6 @@
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(467, 14);
             this.panel3.TabIndex = 10;
-            // 
-            // bugMeldenToolStripMenuItem
-            // 
-            this.bugMeldenToolStripMenuItem.Name = "bugMeldenToolStripMenuItem";
-            this.bugMeldenToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.bugMeldenToolStripMenuItem.Text = "Bug melden!";
-            this.bugMeldenToolStripMenuItem.Click += new System.EventHandler(this.bugMeldenToolStripMenuItem_Click);
             // 
             // Form1
             // 

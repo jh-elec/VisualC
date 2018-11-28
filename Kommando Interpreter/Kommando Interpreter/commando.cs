@@ -150,7 +150,7 @@ public class Cmd
         {
             return -1;
         }
-        
+
         Commando.Data = new byte[buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT]];
 
         try
@@ -178,6 +178,7 @@ public class Cmd
             0, // CRC ( Muss für die Bildung "0" sein! )
         };
 
+
         /*	Checksumme vom Header bilden
         */
         byte FrameSlaveCRC = 0;
@@ -186,16 +187,19 @@ public class Cmd
             FrameSlaveCRC = CmdCrc8CCITTUpdate(FrameSlaveCRC, Frame_[x]);
         }
 
+
         /*	Checksumme von Nutzdaten bilden
         */
-        if (Commando.DataLength > 0)
+        int DataLength = (int)Commando.DataLength - (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__;
+
+        if (DataLength > 0)
         {
-            for (int x = 0; x < Commando.DataLength; x++)
+            for (int x = 0; x < DataLength; x++)
             {
                 try
                 {
-                    FrameSlaveCRC = CmdCrc8CCITTUpdate(FrameSlaveCRC, buffer[(CommandoHeaderIndex + (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__) + x]);
-                    Commando.Data[x] = buffer[(CommandoHeaderIndex + (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__) + x];
+                    FrameSlaveCRC = CmdCrc8CCITTUpdate(FrameSlaveCRC, buffer[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + x]);
+                    Commando.Data[x] = buffer[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + x];
                 }
                 catch
                 {
@@ -203,6 +207,8 @@ public class Cmd
                 }
             }
         }
+
+        Commando.DataLength = (byte)DataLength;
 
         if (FrameSlaveCRC == Commando.SlaveCRC)
         {
@@ -614,9 +620,7 @@ public class Serial
 
 
     int TotalBytes = 0;
-    byte[] buffer = new byte[1024];
-
-    Ringbuffer RingBuffer = new Ringbuffer(1024);
+    byte[] buffer = new byte[4096];
 
     public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
@@ -634,16 +638,64 @@ public class Serial
         */
         try
         {
-            int BytesRead = Client.Read(buffer, TotalBytes , Client.BytesToRead);
+            int BytesToRead = Client.BytesToRead;
+
+            if (BytesToRead <= 0)
+            {
+                return;
+            }
+            
+            int BytesRead = Client.Read(buffer, TotalBytes , BytesToRead);
             TotalBytes += BytesRead;
 
-            if (buffer[0] < TotalBytes) return;
-            MessageBox.Show(BitConverter.ToString(buffer, 0, buffer[0]));
-            ParserInstance.Parse(buffer, ref ParserInstance.CommandoParsed);
+            if ( BytesRead == -1 )
+            {
+                return;
+            }
+
+            if ( buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT] < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ || buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT] > 200 )
+            {
+                TotalBytes = 0;
+                return;
+            }
+
+            if ( buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_DATA_TYP] > (byte) Cmd.Data_Type_Enum.__DATA_TYP_MAX_INDEX__ )
+            {
+                TotalBytes = 0;
+                return;
+            }
+
+            if ( TotalBytes < buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT] )
+            {
+                return;
+            }
+
+
+
+            int State = ParserInstance.Parse(buffer, ref ParserInstance.CommandoParsed);
+            if ( State != 0 )
+            {
+                WriteDebugBuffer("FAIL" , buffer, TotalBytes);
+                TotalBytes = 0;
+            }
+            else
+            {
+                WriteDebugBuffer("OK", buffer, TotalBytes);
+                TotalBytes = 0;
+            }
+            
         }
-        catch
+        catch(ArgumentOutOfRangeException outOfRange)
         {
-            return;
+            MessageBox.Show(outOfRange.Message);
+        }
+        catch(ArgumentNullException nullException)
+        {
+            MessageBox.Show(nullException.Message);
+        }
+        catch(TimeoutException timout )
+        {
+            MessageBox.Show(timout.Message);
         }
     }
 
@@ -659,11 +711,13 @@ public class Serial
         }
     }
 
-    private void WriteDebugBuffer(byte[] buffer, int length )
+    uint Position = 0;
+    private void WriteDebugBuffer( string msg , byte[] buffer, int length )
     {
+        Position++;
         using (System.IO.StreamWriter file = new System.IO.StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "\\log.txt", true))
         {
-            file.WriteLine(BitConverter.ToString(buffer,0, length) + "\r\n");
+            file.WriteLine( "[" + Position.ToString() + "]" + ": " + msg + " -> " + BitConverter.ToString(buffer,0, length) + "\r\n");
         }
     }
 }
