@@ -20,13 +20,24 @@ public class Cmd
         // Prüft ob das Event überhaupt einen Abonnenten hat.
         CommandoFrameEvent?.Invoke( buffer , length );    
     }
-        
-    public bool CrcOk = false;
-    public bool CrcBad = false;
 
-    public  uint CrcOkCnt = 0;
-    public  uint CrcErrorCnt = 0;
+    private byte SlaveCRC;
+    private byte MasterCRC;
+
     private int CommandoHeaderIndex = 0;
+
+    private uint GoodFrameIncomming = 0;
+    private uint BadFrameIncomming = 0;
+
+    public uint GoodFrameCount
+    {
+        get{ return GoodFrameIncomming; }
+    }
+
+    public uint BadFrameCount
+    {
+        get { return BadFrameIncomming; }
+    }
 
     private byte CmdCrc8CCITTUpdate(byte inCrc, byte inData)
     {
@@ -107,7 +118,6 @@ public class Cmd
         public byte DataType;
         public byte MessageID;
         public byte Exitcode;
-        public byte SlaveCRC;
 
         public byte[] Data;
 
@@ -117,7 +127,6 @@ public class Cmd
             DataType    = 0;
             MessageID   = 0;
             Exitcode    = 0;
-            SlaveCRC    = 0;
 
             Data = new byte[Size];
         }
@@ -159,7 +168,7 @@ public class Cmd
             Commando.DataType   = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP];
             Commando.MessageID  = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_ID];
             Commando.Exitcode   = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_EXITCODE];
-            Commando.SlaveCRC   = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_CRC];
+            SlaveCRC            = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_CRC];
         }
         catch
         {
@@ -181,10 +190,10 @@ public class Cmd
 
         /*	Checksumme vom Header bilden
         */
-        byte FrameSlaveCRC = 0;
+        MasterCRC = 0;
         for (int x = 0; x < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__; x++)
         {
-            FrameSlaveCRC = CmdCrc8CCITTUpdate(FrameSlaveCRC, Frame_[x]);
+            MasterCRC = CmdCrc8CCITTUpdate(MasterCRC, Frame_[x]);
         }
 
 
@@ -198,7 +207,7 @@ public class Cmd
             {
                 try
                 {
-                    FrameSlaveCRC = CmdCrc8CCITTUpdate(FrameSlaveCRC, buffer[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + x]);
+                    MasterCRC = CmdCrc8CCITTUpdate(MasterCRC, buffer[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + x]);
                     Commando.Data[x] = buffer[(byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__ + x];
                 }
                 catch
@@ -210,18 +219,16 @@ public class Cmd
 
         Commando.DataLength = (byte)DataLength;
 
-        if (FrameSlaveCRC == Commando.SlaveCRC)
+        if (MasterCRC == SlaveCRC)
         {
-            CrcOk = true;
-            CrcOkCnt++;
+            GoodFrameIncomming++;
 
             // Event feuern..
             CommandoFrameEventFnc( buffer , Commando.DataLength );
         }
         else
         {
-            CrcBad = true;
-            CrcErrorCnt++;
+            BadFrameIncomming++;
 
             return -5;
         }
@@ -505,6 +512,7 @@ public class Serial
 
         try
         {
+            Client.Write("-+");
             Client.Write(buff, 0, buff.Length);
             Client.Write("\r\n");
         }

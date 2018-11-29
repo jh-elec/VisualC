@@ -37,7 +37,6 @@
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -51,8 +50,6 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage5 = new System.Windows.Forms.TabPage();
-            this.lbl_receive_cnt = new System.Windows.Forms.Label();
-            this.progressBar2 = new System.Windows.Forms.ProgressBar();
             this.button3 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.richtxtbx_receive_decodet = new System.Windows.Forms.RichTextBox();
@@ -69,10 +66,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.numeric_msg_id = new System.Windows.Forms.NumericUpDown();
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.lbl_was_send = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.richtxtbx_data_was_send = new System.Windows.Forms.RichTextBox();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.SendCycleTimer = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
@@ -135,7 +130,6 @@
             this.columnHeader1,
             this.columnHeader2,
             this.columnHeader3,
-            this.columnHeader4,
             this.columnHeader6,
             this.columnHeader5});
             this.listView1.FullRowSelect = true;
@@ -166,12 +160,6 @@
             this.columnHeader3.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.columnHeader3.Width = 57;
             // 
-            // columnHeader4
-            // 
-            this.columnHeader4.Text = "CRC";
-            this.columnHeader4.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.columnHeader4.Width = 35;
-            // 
             // columnHeader6
             // 
             this.columnHeader6.Text = "Type";
@@ -181,7 +169,7 @@
             // 
             this.columnHeader5.Text = "Nutzbytes";
             this.columnHeader5.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
-            this.columnHeader5.Width = 171;
+            this.columnHeader5.Width = 199;
             // 
             // tabControl1
             // 
@@ -195,7 +183,6 @@
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(455, 221);
             this.tabControl1.TabIndex = 6;
-            this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
             // tabPage3
             // 
@@ -257,9 +244,9 @@
             this.lbl_crc_statistik.AutoSize = true;
             this.lbl_crc_statistik.Location = new System.Drawing.Point(9, 19);
             this.lbl_crc_statistik.Name = "lbl_crc_statistik";
-            this.lbl_crc_statistik.Size = new System.Drawing.Size(94, 26);
+            this.lbl_crc_statistik.Size = new System.Drawing.Size(123, 26);
             this.lbl_crc_statistik.TabIndex = 6;
-            this.lbl_crc_statistik.Text = "Erfolgreich: 0\r\nFehlgeschlagen: 0\r\n";
+            this.lbl_crc_statistik.Text = "Erfolgreich: 0\r\nFehlgeschlagen: 0 ( 0% )\r\n";
             // 
             // label8
             // 
@@ -293,8 +280,6 @@
             // tabPage5
             // 
             this.tabPage5.BackColor = System.Drawing.SystemColors.ScrollBar;
-            this.tabPage5.Controls.Add(this.lbl_receive_cnt);
-            this.tabPage5.Controls.Add(this.progressBar2);
             this.tabPage5.Controls.Add(this.button3);
             this.tabPage5.Controls.Add(this.button2);
             this.tabPage5.Controls.Add(this.richtxtbx_receive_decodet);
@@ -303,23 +288,6 @@
             this.tabPage5.Size = new System.Drawing.Size(447, 195);
             this.tabPage5.TabIndex = 4;
             this.tabPage5.Text = "Empfangen (Kodiert)";
-            // 
-            // lbl_receive_cnt
-            // 
-            this.lbl_receive_cnt.AutoSize = true;
-            this.lbl_receive_cnt.Location = new System.Drawing.Point(236, 174);
-            this.lbl_receive_cnt.Name = "lbl_receive_cnt";
-            this.lbl_receive_cnt.Size = new System.Drawing.Size(73, 13);
-            this.lbl_receive_cnt.TabIndex = 15;
-            this.lbl_receive_cnt.Text = "Empfangen: 0";
-            // 
-            // progressBar2
-            // 
-            this.progressBar2.Location = new System.Drawing.Point(344, 169);
-            this.progressBar2.Name = "progressBar2";
-            this.progressBar2.Size = new System.Drawing.Size(100, 23);
-            this.progressBar2.Step = 1;
-            this.progressBar2.TabIndex = 14;
             // 
             // button3
             // 
@@ -349,7 +317,6 @@
             this.richtxtbx_receive_decodet.Size = new System.Drawing.Size(441, 160);
             this.richtxtbx_receive_decodet.TabIndex = 11;
             this.richtxtbx_receive_decodet.Text = "";
-            this.richtxtbx_receive_decodet.TextChanged += new System.EventHandler(this.richtxtbx_receive_decodet_TextChanged);
             this.richtxtbx_receive_decodet.KeyDown += new System.Windows.Forms.KeyEventHandler(this.richtxtbx_receive_decodet_KeyDown);
             // 
             // tabPage2
@@ -497,25 +464,14 @@
             // tabPage4
             // 
             this.tabPage4.BackColor = System.Drawing.SystemColors.ScrollBar;
-            this.tabPage4.Controls.Add(this.lbl_was_send);
             this.tabPage4.Controls.Add(this.button1);
             this.tabPage4.Controls.Add(this.richtxtbx_data_was_send);
-            this.tabPage4.Controls.Add(this.progressBar1);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage4.Size = new System.Drawing.Size(447, 195);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Gesendet";
-            // 
-            // lbl_was_send
-            // 
-            this.lbl_was_send.AutoSize = true;
-            this.lbl_was_send.Location = new System.Drawing.Point(195, 166);
-            this.lbl_was_send.Name = "lbl_was_send";
-            this.lbl_was_send.Size = new System.Drawing.Size(65, 13);
-            this.lbl_was_send.TabIndex = 12;
-            this.lbl_was_send.Text = "Gesendet: 0";
             // 
             // button1
             // 
@@ -535,16 +491,7 @@
             this.richtxtbx_data_was_send.Size = new System.Drawing.Size(435, 157);
             this.richtxtbx_data_was_send.TabIndex = 10;
             this.richtxtbx_data_was_send.Text = "";
-            this.richtxtbx_data_was_send.TextChanged += new System.EventHandler(this.richtxtbx_data_was_send_TextChanged_1);
             this.richtxtbx_data_was_send.KeyDown += new System.Windows.Forms.KeyEventHandler(this.richtxtbx_data_was_send_KeyDown_1);
-            // 
-            // progressBar1
-            // 
-            this.progressBar1.Location = new System.Drawing.Point(341, 164);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(100, 23);
-            this.progressBar1.Step = 1;
-            this.progressBar1.TabIndex = 13;
             // 
             // SendCycleTimer
             // 
@@ -654,8 +601,6 @@
             this.Text = "Kommando Interpreter";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.Click += new System.EventHandler(this.Form1_Click);
-            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Form1_MouseClick);
             this.tabControl1.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
@@ -666,7 +611,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tabPage1.ResumeLayout(false);
             this.tabPage5.ResumeLayout(false);
-            this.tabPage5.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -674,7 +618,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numeric_send_cycle_timer_interval)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_msg_id)).EndInit();
             this.tabPage4.ResumeLayout(false);
-            this.tabPage4.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -691,7 +634,6 @@
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ColumnHeader columnHeader3;
-        private System.Windows.Forms.ColumnHeader columnHeader4;
         private System.Windows.Forms.ColumnHeader columnHeader5;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
@@ -710,7 +652,6 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.RichTextBox richtxtbx_data_was_send;
         private System.Windows.Forms.Label lbl_crc_statistik;
-        private System.Windows.Forms.Label lbl_was_send;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ToolTip toolTip1;
@@ -734,9 +675,6 @@
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.ProgressBar progressBar1;
-        private System.Windows.Forms.ProgressBar progressBar2;
-        private System.Windows.Forms.Label lbl_receive_cnt;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.ToolStripMenuItem bugMeldenToolStripMenuItem;
     }

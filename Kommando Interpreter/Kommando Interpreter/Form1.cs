@@ -16,8 +16,6 @@ namespace Interpreter
         static Cmd Parser = new Cmd();
         Serial  Port = new Serial(Parser);
 
-        public uint NewCommandoCnt = 0;
-
         private ComboBox GetComports( string[] ports)
         {
             ComboBox Ports = new ComboBox();
@@ -105,8 +103,6 @@ namespace Interpreter
 
         private void WriteDecodedBuffer( byte[] buffer , uint length )
         {
-            NewCommandoCnt++;
-
             string DecStrHeader = Parser.ConvertByte(buffer, 0, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ");
 
             string DecStrParas = null;
@@ -169,7 +165,6 @@ namespace Interpreter
             ListViewItem cmdItems = new ListViewItem(Parser.CommandoParsed.MessageID.ToString());
             cmdItems.SubItems.Add(Parser.CommandoParsed.DataLength.ToString());
             cmdItems.SubItems.Add(Parser.CommandoParsed.Exitcode.ToString());
-            cmdItems.SubItems.Add(Parser.CommandoParsed.SlaveCRC.ToString());
             cmdItems.SubItems.Add(Parser.CommandoParsed.DataType.ToString());
 
             if (Parser.CommandoParsed.DataLength > 0)
@@ -185,7 +180,7 @@ namespace Interpreter
             {
                 richtxtbx_receive_decodet.Invoke(new Action(() =>
                 {
-                    richtxtbx_receive_decodet.AppendText( Parser.ConvertByte(buffer , 0 , (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ") + "   -   " + Parser.ConvertByte(buffer, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength , " , ") + "\r\n");
+                    richtxtbx_receive_decodet.AppendText( Parser.ConvertByte(buffer , 0 , (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ") + "   -   " + Parser.ConvertByte(buffer, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength , " , ") + "\r\n\n\n");
                 }
                 ));
 
@@ -199,7 +194,10 @@ namespace Interpreter
 
                 lbl_crc_statistik.Invoke(new Action(() =>
                 {
-                    lbl_crc_statistik.Text = "Erfolgreich: " + Parser.CrcOkCnt.ToString() + "\r\n" + "Fehlgeschlagen: " + Parser.CrcErrorCnt.ToString();
+
+                    uint FrameErrorPercent = (Parser.BadFrameCount / Parser.GoodFrameCount) * 100;
+
+                    lbl_crc_statistik.Text = "Erfolgreich: " + Parser.GoodFrameCount.ToString() + "\r\n" + "Fehlgeschlagen: " + Parser.BadFrameCount.ToString() + " " + "( " + FrameErrorPercent.ToString() + "% )";
                 }
                 ));
 
@@ -207,10 +205,7 @@ namespace Interpreter
 
                 tabControl1.Invoke(new Action(() =>
                 {
-                    if (tabControl1.SelectedIndex != 1 && tabControl1.SelectedIndex != 2)
-                    {
-                        this.Text = "Kommando Interpreter" + "          " + ">>[" + NewCommandoCnt.ToString() + "]<<" + " " + "Neue(s) Kommando(s) empfangen!";
-                    }
+                    this.Text = "Kommando Interpreter" + "          " + ">>[" + Parser.GoodFrameCount.ToString() + "]<<" + " " + "Kommando(s) empfangen!";
                 }));
              
             }
@@ -300,7 +295,7 @@ namespace Interpreter
                                 MessageBox.Show("Falsches Format");
                                 return;
                             }
-
+                        
                         } break;
 
                     case (byte)Cmd.Data_Type_Enum.DATA_TYP_STRING:
@@ -325,12 +320,12 @@ namespace Interpreter
             byte[] send = Parser.BuildHeader(CommandoToSend);
 
             Port.WriteCommando(send);
-          
-            //richtxtbx_data_was_send.AppendText( "Header: " + BitConverter.ToString(send, 0 , 8) + "   -   ");
+
+            richtxtbx_data_was_send.AppendText( "Header: " + BitConverter.ToString(send, 0 , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__) + "   -   ");
 
             if ( messageBytes > 0 )
             {
-                richtxtbx_data_was_send.AppendText("Nutzdaten: " + BitConverter.ToString(send, 8, CommandoToSend.DataLength) + "\r\n");
+                richtxtbx_data_was_send.AppendText("Nutzdaten: " + BitConverter.ToString(send, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, CommandoToSend.DataLength) + "\r\n");
             }
             else
             {
@@ -435,25 +430,6 @@ namespace Interpreter
             this.Show();
         }
 
-        private void Form1_MouseClick(object sender, MouseEventArgs e)
-        {
-            this.Text = "Kommando Interpreter";
-            NewCommandoCnt = 0;
-        }
-
-        private void Form1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (tabControl1.SelectedIndex == 1 || tabControl1.SelectedIndex == 2)
-            {
-                Form1_MouseClick(this, null);
-            }
-            
-        }
 
         private void richtxtbx_receive_decodet_KeyDown(object sender, KeyEventArgs e)
         {
@@ -502,21 +478,6 @@ namespace Interpreter
             }
         }
 
-        private void richtxtbx_data_was_send_TextChanged_1(object sender, EventArgs e)
-        {
-            if (richtxtbx_data_was_send.Lines.Length >= 1500) richtxtbx_data_was_send.Clear();
-            lbl_was_send.Text = "Gesendet: " + richtxtbx_data_was_send.Lines.Length.ToString();
-            progressBar1.Maximum = 1500;
-            progressBar1.Value = richtxtbx_data_was_send.Lines.Length;
-        }
-
-        private void richtxtbx_receive_decodet_TextChanged(object sender, EventArgs e)
-        {
-            if (richtxtbx_receive_decodet.Lines.Length >= 1500) richtxtbx_receive_decodet.Clear();
-            lbl_receive_cnt.Text = "Empfangen: " + (richtxtbx_receive_decodet.Lines.Length-1).ToString();
-            progressBar2.Maximum = 1500;
-            progressBar2.Value = richtxtbx_receive_decodet.Lines.Length;
-        }
 
         private void cmbbx_port_TextChanged(object sender, EventArgs e)
         {
