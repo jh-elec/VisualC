@@ -567,69 +567,48 @@ public class Serial
         Client.Dispose();
     }
 
-    struct Search_Frame_Struct
+    private struct Frames_Struct
     {
-        public int     Count;
-        public int     LastRead;
+        public byte     Frames;
+        public byte[]   Index;
+        public byte[]   Length;
 
-        public int     FrameLengMust;
-
-        public int     Index;
-        public int     FrameSize;
-        public byte[]  Frame;
-
-        public Search_Frame_Struct( int size )
+        public Frames_Struct( uint size )
         {
-            Count           = 0; // Wie viele Frames wurden gefunden?
-            LastRead        = 0;
-            FrameLengMust   = 0; // Wie groß ist der aktuell zu empfangender Frame?
-            Index           = 0;
-            FrameSize       = 0;
-            Frame           = new byte[size];
+            Frames = 0;
+            Index = new byte[size];
+            Length = new byte[size];
         }
     }
 
-
-    private int GetStartOfFrame( byte[] buffer )
+    private Frames_Struct GetFramesInBuffer( byte[] FrameBuffer , int BytesAtBuffer )
     {
-        int StartOfFrame = 0;
-        
-        for (; StartOfFrame < buffer.Length; StartOfFrame++)
+        Frames_Struct FrameInfo = new Frames_Struct();
+        uint FrameLength = 0;
+
+        for ( FrameLength = 0; FrameLength < BytesAtBuffer; )
         {
-            if ( buffer[StartOfFrame] == '-' )
-            {
-                if ( buffer[StartOfFrame + 1] == '+')
-                {
-                    return StartOfFrame;
-                }
-            }
+            FrameLength += FrameBuffer[FrameLength];
+            FrameInfo.Frames++;
         }
 
-        return -1;
-    }
+        Frames_Struct FrameTemp = FrameInfo;
 
-    private int GetEndOfFrame( byte[] buffer )
-    {
-        int EndOfFrame = 0;
+        FrameInfo = new Frames_Struct(FrameTemp.Frames);
 
-        for (; EndOfFrame < buffer.Length; EndOfFrame++)
+        FrameLength = 0;
+        for (FrameLength = 0; FrameLength < BytesAtBuffer;)
         {
-            if ( buffer[EndOfFrame] == '\r' )
-            {
-                if ( buffer[EndOfFrame+1] == '\n')
-                {
-                    return EndOfFrame;
-                }
-            }
+            FrameInfo.Index[FrameInfo.Frames] = (byte)FrameLength;
+            FrameInfo.Length[FrameInfo.Frames] = FrameBuffer[FrameLength];
+            FrameLength += FrameInfo.Length[FrameInfo.Frames++];
         }
 
-        return -1;
+        return FrameInfo;
     }
 
-
-    int TotalBytes = 0;
-    byte[] buffer = new byte[4096];
-
+    int     TotalReadedBytes    = 0;
+    byte[]  FrameBuffer         = new byte[1024];
     public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         /* Protokoll
@@ -646,52 +625,20 @@ public class Serial
         */
         try
         {
-            int BytesToRead = Client.BytesToRead;
+            int ReadedBytes = Client.Read(FrameBuffer, TotalReadedBytes, Client.BytesToRead);
+            TotalReadedBytes += ReadedBytes;
 
-            if (BytesToRead <= 0)
+            if (TotalReadedBytes < FrameBuffer[0]) return;
+
+            Frames_Struct FrameInfo = GetFramesInBuffer(FrameBuffer, TotalReadedBytes);
+
+            for ( int x = 0; x < FrameInfo.Frames; x++ )
             {
-                return;
-            }
-            
-            int BytesRead = Client.Read(buffer, TotalBytes , BytesToRead);
-            TotalBytes += BytesRead;
+                byte[] Frame = new byte[FrameInfo.Length[x]];
+                Array.Copy(FrameBuffer, FrameInfo.Index[x], Frame, 0, FrameInfo.Length[x]);
+                ParserInstance.Parse(Frame, ref ParserInstance.CommandoParsed);
+            }TotalReadedBytes = 0;
 
-            if ( BytesRead == -1 )
-            {
-                return;
-            }
-
-            if ( buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT] < (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ || buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT] > 200 )
-            {
-                TotalBytes = 0;
-                return;
-            }
-
-            if ( buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_DATA_TYP] > (byte) Cmd.Data_Type_Enum.__DATA_TYP_MAX_INDEX__ )
-            {
-                TotalBytes = 0;
-                return;
-            }
-
-            if ( TotalBytes < buffer[(byte)Cmd.Communication_Header_Enum.CMD_HEADER_LENGHT] )
-            {
-                return;
-            }
-
-
-
-            int State = ParserInstance.Parse(buffer, ref ParserInstance.CommandoParsed);
-            if ( State != 0 )
-            {
-                WriteDebugBuffer("FAIL" , buffer, TotalBytes);
-                TotalBytes = 0;
-            }
-            else
-            {
-                WriteDebugBuffer("OK", buffer, TotalBytes);
-                TotalBytes = 0;
-            }
-            
         }
         catch(ArgumentOutOfRangeException outOfRange)
         {

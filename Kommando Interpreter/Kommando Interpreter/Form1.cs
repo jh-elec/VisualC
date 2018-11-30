@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace Interpreter
 {
@@ -15,6 +16,8 @@ namespace Interpreter
     {
         static Cmd Parser = new Cmd();
         Serial  Port = new Serial(Parser);
+
+        Stopwatch stopwatch = new Stopwatch();
 
         private ComboBox GetComports( string[] ports)
         {
@@ -177,10 +180,10 @@ namespace Interpreter
             }
 
             try
-            {
+            {                    
                 richtxtbx_receive_decodet.Invoke(new Action(() =>
                 {
-                    richtxtbx_receive_decodet.AppendText( Parser.ConvertByte(buffer , 0 , (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ") + "   -   " + Parser.ConvertByte(buffer, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength , " , ") + "\r\n\n\n");
+                    richtxtbx_receive_decodet.AppendText(Parser.ConvertByte(buffer, 0, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, " , ") + "   -   " + Parser.ConvertByte(buffer, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ") + "\r\n\n\n");
                 }
                 ));
 
@@ -396,16 +399,42 @@ namespace Interpreter
                 SendCycleTimer.Interval = (int)numeric_send_cycle_timer_interval.Value;
                 SendCycleTimer.Enabled = true;
                 SendCycleTimer.Start();
+                stopwatch.Start();
             }
             else
             {
                 SendCycleTimer.Enabled = false;
+                stopwatch.Stop();
             }
         }
 
+        uint New = 10;
+        uint Old = 0;
         private void SendCycleTimer_Tick(object sender, EventArgs e)
         {
-            SendCommando(sender, e);
+            if ( stopwatch.Elapsed.TotalSeconds >= 3 )
+            {
+                stopwatch.Reset();
+                DialogResult res = MessageBox.Show("Gerät antwortet nicht!", "Timeout", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                SendCycleTimer.Stop();
+                SendCycleTimer.Enabled = false;
+                checkBox1.Checked = false;
+                New = 10;
+                Old = 1;
+                return;
+            }
+
+            New = Parser.GoodFrameCount;
+            if ( Old != New )
+            {
+                stopwatch.Reset();
+                SendCommando(sender, e);
+                Old = New;   
+            }
+            else
+            {
+                return;
+            }  
         }
 
         private void messageBoxAnzeigenToolStripMenuItem_Click(object sender, EventArgs e)
