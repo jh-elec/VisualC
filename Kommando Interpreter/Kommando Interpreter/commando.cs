@@ -11,20 +11,26 @@ public class Cmd
 {
     /*  Event Delegate
         */
-    public delegate void EventDelegate( byte[] buffer , uint length );
+    public delegate void EventDelegate( Commando_Struct Parsed );
 
     public event EventDelegate CommandoFrameEvent;
 
-    public void CommandoFrameEventFnc( byte[] buffer, uint length )
+    public void CommandoFrameEventFnc( Commando_Struct Parsed )
     {
         // Prüft ob das Event überhaupt einen Abonnenten hat.
-        CommandoFrameEvent?.Invoke( buffer , length );    
+        CommandoFrameEvent?.Invoke( Parsed );    
+    }
+
+
+    private Control SyncCtrl;
+    public Control SyncForm
+    {
+        get { return SyncCtrl; }
+        set { SyncCtrl = value; }
     }
 
     private byte SlaveCRC;
     private byte MasterCRC;
-
-    private int CommandoHeaderIndex = 0;
 
     private uint GoodFrameIncomming = 0;
     private uint BadFrameIncomming = 0;
@@ -134,25 +140,6 @@ public class Cmd
 
     public Commando_Struct CommandoParsed;
 
-    public int ParseStart(byte[] buffer)
-    {
-        int startByte1Index = 0;
-        int startByte2Index = 0;
-
-        CommandoHeaderIndex = 0;
-
-        startByte1Index = Array.IndexOf(buffer, (byte)'-', 0);
-        startByte2Index = Array.IndexOf(buffer, (byte)'+', 0);
-
-        if ( ( startByte2Index - startByte1Index) == 1 )
-        {
-            CommandoHeaderIndex = startByte1Index;
-            return CommandoHeaderIndex;
-        }
-     
-        return -1;
-    }
-
     public int Parse(byte[] buffer, ref Commando_Struct Commando)
     {
         if (buffer.Length < (byte)Communication_Header_Enum.__CMD_HEADER_ENTRYS__)
@@ -164,11 +151,11 @@ public class Cmd
 
         try
         {
-            Commando.DataLength = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_LENGHT];
-            Commando.DataType   = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP];
-            Commando.MessageID  = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_ID];
-            Commando.Exitcode   = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_EXITCODE];
-            SlaveCRC            = buffer[CommandoHeaderIndex + (byte)Communication_Header_Enum.CMD_HEADER_CRC];
+            Commando.DataLength = buffer[(byte)Communication_Header_Enum.CMD_HEADER_LENGHT];
+            Commando.DataType   = buffer[(byte)Communication_Header_Enum.CMD_HEADER_DATA_TYP];
+            Commando.MessageID  = buffer[(byte)Communication_Header_Enum.CMD_HEADER_ID];
+            Commando.Exitcode   = buffer[(byte)Communication_Header_Enum.CMD_HEADER_EXITCODE];
+            SlaveCRC            = buffer[(byte)Communication_Header_Enum.CMD_HEADER_CRC];
         }
         catch
         {
@@ -223,8 +210,10 @@ public class Cmd
         {
             GoodFrameIncomming++;
 
-            // Event feuern..
-            CommandoFrameEventFnc( buffer , Commando.DataLength );
+            if ( SyncForm != null && SyncForm.InvokeRequired )
+            {
+                SyncForm.Invoke(new EventDelegate(this.CommandoFrameEventFnc), CommandoParsed);
+            }
         }
         else
         {
@@ -405,15 +394,13 @@ public class Cmd
 
     public string ConvertToString(byte[] buffer , int index , int length)
     {
-        return ASCIIEncoding.ASCII.GetString(buffer, index, length);
+        return Encoding.ASCII.GetString(buffer, index, length);
     }
 }
 
 public class Serial
 {
     private Cmd ParserInstance = null;
-
-    System.Windows.Forms.Timer ReadRingBuffTimer = new System.Windows.Forms.Timer();
 
     /// <summary>
     /// Verweis auf den Parser der benutzt werden soll um die eingehenden
@@ -425,22 +412,38 @@ public class Serial
     }
 
 
-    private static SerialPort Client = new SerialPort();
+    public SerialPort Client = new SerialPort();
 
-    public void Init( string port, int baud)
+
+    public int Init( string port, int baud)
     {
-        if (!Client.IsOpen)
+        if (Client.IsOpen) return -1;
+        if (port == null) return -2;
+
+        if (port.Contains("COM") != false)
         {
-            if ( port.Contains("COM") != false && port != null )
-            {
-                Client.PortName = port;
-                Client.BaudRate = baud;
-                Client.ReceivedBytesThreshold = 1;
-            }
+            Client.PortName = port;
         }
+        else
+        {
+            return -3;
+        }
+
+        if ( baud >= 50 && baud <= 500000 )
+        {
+            Client.BaudRate = baud;
+        }
+        else
+        {
+            return -4;
+        }
+
+        Client.ReceivedBytesThreshold = 1;
 
         /// Event abbonieren
         Client.DataReceived += new SerialDataReceivedEventHandler(Client_DataReceived);
+
+        return 0;
     }
 
     public void Open()
@@ -453,7 +456,10 @@ public class Serial
                 Client.DiscardInBuffer();
                 Client.DiscardOutBuffer();
             }
-            catch { }              
+            catch
+            {
+                Debug.WriteLine("Serial Port: " + "Port cant opened");
+            }              
         }
     }
 
@@ -469,31 +475,6 @@ public class Serial
             Thread CloseDown = new Thread(new ThreadStart(CloseSerialOnPortClose)); //close port in new thread to avoid hang
             CloseDown.Start(); //close port in new thread to avoid hang
         }
-    }
-
-    public bool IsOpen()
-    {
-        return Client.IsOpen;
-    }
-
-    public int BytesToRead()
-    {
-        return Client.BytesToRead;
-    }
-
-    public int BytesToWrite()
-    {
-        return Client.BytesToWrite;
-    }
-
-    public string ReadLine()
-    {
-        return Client.ReadLine();
-    }
-
-    public string ReadExist()
-    {
-        return Client.ReadExisting();
     }
 
     public void WriteString(string str)
@@ -567,48 +548,7 @@ public class Serial
         Client.Dispose();
     }
 
-    private struct Frames_Struct
-    {
-        public byte     Frames;
-        public byte[]   Index;
-        public byte[]   Length;
-
-        public Frames_Struct( uint size )
-        {
-            Frames = 0;
-            Index = new byte[size];
-            Length = new byte[size];
-        }
-    }
-
-    private Frames_Struct GetFramesInBuffer( byte[] FrameBuffer , int BytesAtBuffer )
-    {
-        Frames_Struct FrameInfo = new Frames_Struct();
-        uint FrameLength = 0;
-
-        for ( FrameLength = 0; FrameLength < BytesAtBuffer; )
-        {
-            FrameLength += FrameBuffer[FrameLength];
-            FrameInfo.Frames++;
-        }
-
-        Frames_Struct FrameTemp = FrameInfo;
-
-        FrameInfo = new Frames_Struct(FrameTemp.Frames);
-
-        FrameLength = 0;
-        for (FrameLength = 0; FrameLength < BytesAtBuffer;)
-        {
-            FrameInfo.Index[FrameInfo.Frames] = (byte)FrameLength;
-            FrameInfo.Length[FrameInfo.Frames] = FrameBuffer[FrameLength];
-            FrameLength += FrameInfo.Length[FrameInfo.Frames++];
-        }
-
-        return FrameInfo;
-    }
-
-    int     TotalReadedBytes    = 0;
-    byte[]  FrameBuffer         = new byte[1024];
+    Ringbuffer RingBuff = new Ringbuffer(65535);
     public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         /* Protokoll
@@ -621,49 +561,38 @@ public class Serial
             *  Nutzdaten                    : 0..255
         */
 
-        /*  Empfangene Daten abholen
-        */
         try
         {
-            int ReadedBytes = Client.Read(FrameBuffer, TotalReadedBytes, Client.BytesToRead);
-            TotalReadedBytes += ReadedBytes;
+            byte[] tmp = new byte[Client.BytesToRead];
 
-            if (TotalReadedBytes < FrameBuffer[0]) return;
+            int Length = Client.Read(tmp, 0, tmp.Length);
 
-            Frames_Struct FrameInfo = GetFramesInBuffer(FrameBuffer, TotalReadedBytes);
+            if (Length <= 0) return;
+            RingBuff.Push(tmp);
 
-            for ( int x = 0; x < FrameInfo.Frames; x++ )
+            do
             {
-                byte[] Frame = new byte[FrameInfo.Length[x]];
-                Array.Copy(FrameBuffer, FrameInfo.Index[x], Frame, 0, FrameInfo.Length[x]);
-                ParserInstance.Parse(Frame, ref ParserInstance.CommandoParsed);
-            }TotalReadedBytes = 0;
+                tmp = RingBuff.Peek(1);
+                if ( RingBuff.Length >= tmp[0] )
+                {
+                    ParserInstance.Parse( RingBuff.Pull(tmp[0]) , ref ParserInstance.CommandoParsed);
+                }
+                else
+                {
+                    break;
+                }
+            } while (RingBuff.Length > 1);
 
         }
-        catch(ArgumentOutOfRangeException outOfRange)
+        catch(ArgumentException message)
         {
-            MessageBox.Show(outOfRange.Message);
-        }
-        catch(ArgumentNullException nullException)
-        {
-            MessageBox.Show(nullException.Message);
-        }
-        catch(TimeoutException timout )
-        {
-            MessageBox.Show(timout.Message);
+            Debug.WriteLine(message.Message);
         }
     }
 
-    private static void CloseSerialOnPortClose()
+    private void CloseSerialOnPortClose()
     {
-        try
-        {
-            Client.Close(); //close the serial port
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message); //catch any serial port closing error messages
-        }
+        Client.Close(); //close the serial port
     }
 
     uint Position = 0;

@@ -31,6 +31,7 @@ namespace Interpreter
         private void Form1_Load(object sender, EventArgs e)
         {
             Parser.CommandoFrameEvent += new Cmd.EventDelegate(WriteDecodedBuffer);
+            Parser.SyncForm = this;
 
             string[] foundPorts = Port.GetPortNames();
 
@@ -71,7 +72,7 @@ namespace Interpreter
             InitializeComponent();
         }
 
-        private async void StartPing()
+        private void StartPing()
         {
             Cmd.Commando_Struct ping = new Cmd.Commando_Struct();
 
@@ -79,55 +80,69 @@ namespace Interpreter
             byte[] send = Parser.BuildHeader(ping);
 
             Port.WriteCommando(send);
-            await Task.Delay(500);
         }
 
         private void btn_port_open_Click(object sender, EventArgs e)
         {
-            if (Port.IsOpen())
+            switch (Port.Client.IsOpen)
             {
-                btn_port_open.Text = "Öffnen";
-                Port.Close();
-                Port.Dispose();
-                cmbbx_port.Enabled = true;
-                cmbbx_baudrate.Enabled = true;
-                checkBox1.Checked = false;
-            }
-            else
-            {
-                Port.Init(cmbbx_port.Text, Convert.ToInt32(cmbbx_baudrate.Text));
-                Port.Open();
-                btn_port_open.Text = "Schließen";
-                cmbbx_port.Enabled = false;
-                cmbbx_baudrate.Enabled = false;
-                StartPing();
+                case true:
+                    {
+                        Port.Close();
+                        btn_port_open.Text = "Öffnen";
+                        cmbbx_port.Enabled = true;
+                        cmbbx_baudrate.Enabled = true;
+                        checkBox1.Checked = false;
+
+                        Debug.WriteLine("Schnittstelle wurde geschlossen..");
+                    }
+                    break;
+
+                case false:
+                    {
+                        int PortInit = Port.Init(cmbbx_port.Text, Convert.ToInt32(cmbbx_baudrate.SelectedItem));
+
+                        Debug.WriteLine("Port Init State: " + PortInit);
+
+                        if (PortInit == 0)
+                        {
+                            Port.Open();
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Port Initalisierung fehlerhaft.."); 
+                        }
+
+                        btn_port_open.Text = "Schließen";
+                        cmbbx_port.Enabled = false;
+                        cmbbx_baudrate.Enabled = false;
+
+                        Debug.WriteLine("Schnittstelle wurde geöffnet..");
+                    }break;
             }
         }
 
-        private void WriteDecodedBuffer( byte[] buffer , uint length )
+        private void WriteDecodedBuffer( Cmd.Commando_Struct Parsed )
         {
-            string DecStrHeader = Parser.ConvertByte(buffer, 0, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__ , " , ");
+            string DecStrParas = "";
 
-            string DecStrParas = null;
-
-
-            switch (Parser.CommandoParsed.DataType)
+            switch (Parsed.DataType)
             {
                 /*  Vorzeichenbehaftete Werte
                  */
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT8:
                     {
-                        DecStrParas = Parser.ConvertByteToSignedByte(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
+                        DecStrParas = Parser.ConvertByteToSignedByte(Parsed.Data , 0 , Parsed.DataLength, " , ");
                     }break;
                     
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT16:
                     {
-                        DecStrParas = Parser.ConvertInt16ToInt16(buffer , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
+                        DecStrParas = Parser.ConvertInt16ToInt16(Parsed.Data , 0 , Parsed.DataLength, " , ");
                     }break;
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_INT32:
                     {
-                        DecStrParas = Parser.ConvertInt32ToInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
+                        DecStrParas = Parser.ConvertInt32ToInt32(Parsed.Data, 0 , Parsed.DataLength, " , ");
                     }break;
 
 
@@ -135,42 +150,42 @@ namespace Interpreter
                  */
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT8:
                     {
-                        DecStrParas = Parser.ConvertByte(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
+                        DecStrParas = Parser.ConvertByte(Parsed.Data, 0 , Parsed.DataLength, " , ");
                     }break;
                     
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT16:
                     {
-                        DecStrParas = Parser.ConvertUInt16(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
+                        DecStrParas = Parser.ConvertUInt16(Parsed.Data, 0 , Parsed.DataLength, " , ");
                     }break;
                     
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_UINT32:
                     {
-                        DecStrParas = Parser.ConvertUInt32(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
+                        DecStrParas = Parser.ConvertUInt32(Parsed.Data, 0 , Parsed.DataLength, " , ");
                     }break;
                     
 
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_FLOAT:
                     {
-                        DecStrParas = Parser.ConvertToFloat(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ");
+                        DecStrParas = Parser.ConvertToFloat(Parsed.Data, 0 , Parsed.DataLength, " , ");
                     }break;
 
                 /*  String
                  */
                 case (byte)Cmd.Data_Type_Enum.DATA_TYP_STRING:
                     {
-                        DecStrParas = Parser.ConvertToString(buffer, (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength);
+                        DecStrParas = Parser.ConvertToString(Parsed.Data, 0 , Parsed.DataLength);
                     }break;  
             }
 
 
-            ListViewItem cmdItems = new ListViewItem(Parser.CommandoParsed.MessageID.ToString());
-            cmdItems.SubItems.Add(Parser.CommandoParsed.DataLength.ToString());
-            cmdItems.SubItems.Add(Parser.CommandoParsed.Exitcode.ToString());
-            cmdItems.SubItems.Add(Parser.CommandoParsed.DataType.ToString());
+            ListViewItem cmdItems = new ListViewItem(Parsed.MessageID.ToString());
+            cmdItems.SubItems.Add(Parsed.DataLength.ToString());
+            cmdItems.SubItems.Add(Parsed.Exitcode.ToString());
+            cmdItems.SubItems.Add(Parsed.DataType.ToString());
 
-            if (Parser.CommandoParsed.DataLength > 0)
+            if (Parsed.DataLength > 0)
             {
                 cmdItems.SubItems.Add(DecStrParas);
             }
@@ -179,43 +194,20 @@ namespace Interpreter
                 cmdItems.SubItems.Add("-");
             }
 
-            try
-            {                    
-                richtxtbx_receive_decodet.Invoke(new Action(() =>
-                {
-                    richtxtbx_receive_decodet.AppendText(Parser.ConvertByte(buffer, 0, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, " , ") + "   -   " + Parser.ConvertByte(buffer, (uint)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__, Parser.CommandoParsed.DataLength, " , ") + "\r\n\n\n");
-                }
-                ));
+            listView1.Items.Add(cmdItems);
+            listView1.Items[listView1.Items.Count - 1].EnsureVisible();
 
-                listView1.Invoke( new Action(() =>
-                {
-                    if (listView1.Items.Count > 1500) listView1.Items.Clear();
-                    listView1.Items.Add(cmdItems);
-                    listView1.Items[listView1.Items.Count - 1].EnsureVisible();
-                }   
-                ));
+            uint FrameErrorPercent = (Parser.BadFrameCount / Parser.GoodFrameCount) * 100;
 
-                lbl_crc_statistik.Invoke(new Action(() =>
-                {
+            lbl_crc_statistik.Text = "Erfolgreich: " + Parser.GoodFrameCount.ToString() + "\r\n" + "Fehlgeschlagen: " + Parser.BadFrameCount.ToString() + " " + "( " + FrameErrorPercent.ToString() + "% )";
 
-                    uint FrameErrorPercent = (Parser.BadFrameCount / Parser.GoodFrameCount) * 100;
 
-                    lbl_crc_statistik.Text = "Erfolgreich: " + Parser.GoodFrameCount.ToString() + "\r\n" + "Fehlgeschlagen: " + Parser.BadFrameCount.ToString() + " " + "( " + FrameErrorPercent.ToString() + "% )";
-                }
-                ));
-
-                if (messageBoxAnzeigenToolStripMenuItem.CheckState == CheckState.Checked) this.Show();
-
-                tabControl1.Invoke(new Action(() =>
-                {
-                    this.Text = "Kommando Interpreter" + "          " + ">>[" + Parser.GoodFrameCount.ToString() + "]<<" + " " + "Kommando(s) empfangen!";
-                }));
-             
-            }
-            catch
+            if (messageBoxAnzeigenToolStripMenuItem.CheckState == CheckState.Checked)
             {
-                return;
+                this.Show();
             }
+                
+            this.Text = "Kommando Interpreter" + "          " + ">>[" + Parser.GoodFrameCount.ToString() + "]<<" + " " + "Kommando(s) empfangen!";
         }
 
         private void SendCommando( object sender , EventArgs e )
@@ -324,7 +316,7 @@ namespace Interpreter
 
             Port.WriteCommando(send);
 
-            richtxtbx_data_was_send.AppendText( "Header: " + BitConverter.ToString(send, 0 , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__) + "   -   ");
+            richtxtbx_data_was_send.AppendText( "[Hex] Header: " + BitConverter.ToString(send, 0 , (byte)Cmd.Communication_Header_Enum.__CMD_HEADER_ENTRYS__) + "   -   ");
 
             if ( messageBytes > 0 )
             {
@@ -337,7 +329,6 @@ namespace Interpreter
         }
 
 
-        
         private void btn_data_send_Click(object sender, EventArgs e)
         {
             SendCommando(sender, e);
@@ -408,33 +399,9 @@ namespace Interpreter
             }
         }
 
-        uint New = 10;
-        uint Old = 0;
         private void SendCycleTimer_Tick(object sender, EventArgs e)
         {
-            if ( stopwatch.Elapsed.TotalSeconds >= 3 )
-            {
-                stopwatch.Reset();
-                DialogResult res = MessageBox.Show("Gerät antwortet nicht!", "Timeout", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                SendCycleTimer.Stop();
-                SendCycleTimer.Enabled = false;
-                checkBox1.Checked = false;
-                New = 10;
-                Old = 1;
-                return;
-            }
-
-            New = Parser.GoodFrameCount;
-            if ( Old != New )
-            {
-                stopwatch.Reset();
-                SendCommando(sender, e);
-                Old = New;   
-            }
-            else
-            {
-                return;
-            }  
+            SendCommando(sender, e); 
         }
 
         private void messageBoxAnzeigenToolStripMenuItem_Click(object sender, EventArgs e)
@@ -459,15 +426,6 @@ namespace Interpreter
             this.Show();
         }
 
-
-        private void richtxtbx_receive_decodet_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Delete)
-            {
-                richtxtbx_receive_decodet.Clear();
-            }
-        }
-
         private void richtxtbx_data_was_send_KeyDown_1(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Delete)
@@ -475,38 +433,6 @@ namespace Interpreter
                 richtxtbx_data_was_send.Clear();
             }
         }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\decoded_received_log.txt"))
-            {
-                File.Delete(AppDomain.CurrentDomain.BaseDirectory + "\\decoded_received_log.txt");
-            }
-
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "\\decoded_received_log.txt", true))
-            {
-                for ( uint x = 0; x < richtxtbx_receive_decodet.Lines.Length; x++)
-                {
-                    file.Write("[" + x.ToString() + "]:" + " " + richtxtbx_receive_decodet.Lines[x] + "\r\n");
-                }
-            }
-
-            MessageBox.Show("Logdatei erfolgreich gespeichert!");
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            DialogResult res = MessageBox.Show("Daten wirklich löschen?", "Achtung!", MessageBoxButtons.YesNo);
-            if ( res == DialogResult.Yes )
-            {
-                richtxtbx_receive_decodet.Clear();
-            }
-            else
-            {
-                return;
-            }
-        }
-
 
         private void cmbbx_port_TextChanged(object sender, EventArgs e)
         {
