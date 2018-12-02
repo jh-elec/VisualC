@@ -30,7 +30,7 @@ namespace Interpreter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Parser.CommandoFrameEvent += new Cmd.EventDelegate(WriteDecodedBuffer);
+            Parser.CommandoFrameEvent += new Cmd.EventDelegate(FrameToGUI);
             Parser.SyncForm = this;
 
             string[] foundPorts = Port.GetPortNames();
@@ -122,9 +122,15 @@ namespace Interpreter
             }
         }
 
-        private void WriteDecodedBuffer( Cmd.Commando_Struct Parsed )
+        private void FrameToGUI( Cmd.Commando_Struct Parsed )
         {
             string DecStrParas = "";
+
+            if ( listView1.Items.Count > 1000 )
+            {
+                listView1.Items.Clear();
+            }
+
 
             switch (Parsed.DataType)
             {
@@ -197,9 +203,9 @@ namespace Interpreter
             listView1.Items.Add(cmdItems);
             listView1.Items[listView1.Items.Count - 1].EnsureVisible();
 
-            uint FrameErrorPercent = (Parser.BadFrameCount / Parser.GoodFrameCount) * 100;
+            float FrameErrorPercent = (((float)Parser.BadFrameCount / (float)Parser.GoodFrameCount))*100;
 
-            lbl_crc_statistik.Text = "Erfolgreich: " + Parser.GoodFrameCount.ToString() + "\r\n" + "Fehlgeschlagen: " + Parser.BadFrameCount.ToString() + " " + "( " + FrameErrorPercent.ToString() + "% )";
+            lbl_crc_statistik.Text = "Erfolgreich: " + Parser.GoodFrameCount.ToString() + "\r\n" + "Fehlgeschlagen: " + Parser.BadFrameCount.ToString() + " " + "( " + FrameErrorPercent.ToString("0.0000") + "% )";
 
 
             if (messageBoxAnzeigenToolStripMenuItem.CheckState == CheckState.Checked)

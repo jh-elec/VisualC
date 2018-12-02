@@ -109,11 +109,13 @@ public class Ringbuffer
     {
         if ( Data == null || Data.Length == 0 )
         {
+            Clear();
             throw new ArgumentException("Are you serious to store nothing? 0.o", "Data");
         }
 
         if ( Data.Length > Buffer.Length )
         {
+            Clear();
             throw new InternalBufferOverflowException("Received more data than the buffer capacity can store.");
         }
 
@@ -204,6 +206,7 @@ public class Ringbuffer
 
         if ( Length <= 0 )
         {
+            Clear();
             throw new ArgumentException("Are you serious to request 0 bytes or less? 0.o", "Length");
         }
 

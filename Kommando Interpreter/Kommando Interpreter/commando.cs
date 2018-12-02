@@ -452,6 +452,7 @@ public class Serial
         {
             try
             {
+                RingBuff.Clear();
                 Client.Open();
                 Client.DiscardInBuffer();
                 Client.DiscardOutBuffer();
