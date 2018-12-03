@@ -76,6 +76,8 @@
             this.label8 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.checkbx_send_start_bytes = new System.Windows.Forms.CheckBox();
+            this.label7 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_send_cycle_timer_interval)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.tabPage4.SuspendLayout();
@@ -248,6 +250,8 @@
             // tabPage2
             // 
             this.tabPage2.BackColor = System.Drawing.SystemColors.ScrollBar;
+            this.tabPage2.Controls.Add(this.label7);
+            this.tabPage2.Controls.Add(this.checkbx_send_start_bytes);
             this.tabPage2.Controls.Add(this.label6);
             this.tabPage2.Controls.Add(this.groupBox1);
             this.tabPage2.Controls.Add(this.btn_data_send);
@@ -299,7 +303,7 @@
             // 
             this.btn_data_send.Location = new System.Drawing.Point(6, 156);
             this.btn_data_send.Name = "btn_data_send";
-            this.btn_data_send.Size = new System.Drawing.Size(75, 23);
+            this.btn_data_send.Size = new System.Drawing.Size(147, 33);
             this.btn_data_send.TabIndex = 8;
             this.btn_data_send.Text = "Senden";
             this.btn_data_send.UseVisualStyleBackColor = true;
@@ -533,6 +537,27 @@
             this.tabControl1.Size = new System.Drawing.Size(455, 221);
             this.tabControl1.TabIndex = 6;
             // 
+            // checkbx_send_start_bytes
+            // 
+            this.checkbx_send_start_bytes.AutoSize = true;
+            this.checkbx_send_start_bytes.Location = new System.Drawing.Point(300, 138);
+            this.checkbx_send_start_bytes.Name = "checkbx_send_start_bytes";
+            this.checkbx_send_start_bytes.Size = new System.Drawing.Size(121, 17);
+            this.checkbx_send_start_bytes.TabIndex = 17;
+            this.checkbx_send_start_bytes.Text = "Start Bytes senden?";
+            this.toolTip1.SetToolTip(this.checkbx_send_start_bytes, "\"-+\"");
+            this.checkbx_send_start_bytes.UseVisualStyleBackColor = true;
+            this.checkbx_send_start_bytes.CheckedChanged += new System.EventHandler(this.checkbx_send_start_bytes_CheckedChanged);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(298, 106);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(125, 26);
+            this.label7.TabIndex = 18;
+            this.label7.Text = "Dient zum erkennen des \r\nneuen Frames.";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -623,6 +648,8 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.CheckBox checkbx_send_start_bytes;
+        private System.Windows.Forms.Label label7;
     }
 }
 

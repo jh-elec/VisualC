@@ -411,9 +411,16 @@ public class Serial
         ParserInstance = Instance;
     }
 
+    Ringbuffer RingBuff = new Ringbuffer(65535);
 
     public SerialPort Client = new SerialPort();
 
+    bool StartBytes_ = false;
+    public bool StartBytes
+    {
+        get { return StartBytes_; }
+        set { StartBytes_ = value; }
+    }
 
     public int Init( string port, int baud)
     {
@@ -494,7 +501,10 @@ public class Serial
 
         try
         {
-            Client.Write("-+");
+            if ( StartBytes == true )
+            {
+                Client.Write("-+");
+            }
             Client.Write(buff, 0, buff.Length);
             Client.Write("\r\n");
         }
@@ -549,7 +559,7 @@ public class Serial
         Client.Dispose();
     }
 
-    Ringbuffer RingBuff = new Ringbuffer(65535);
+
     public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         /* Protokoll

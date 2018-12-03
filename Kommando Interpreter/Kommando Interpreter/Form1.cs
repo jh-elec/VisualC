@@ -461,5 +461,17 @@ namespace Interpreter
             System.Diagnostics.Process.Start
             ("mailto:J.Homann@jh-elec.de?subject=" + "Kommando Interpreter" + " - " + "Ver.:" + Application.ProductVersion + "&body=" + "Mir ist folgendes aufgefallen,");
         }
+
+        private void checkbx_send_start_bytes_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkbx_send_start_bytes.CheckState == CheckState.Checked)
+            {
+                Port.StartBytes = true;
+            }
+            else
+            {
+                Port.StartBytes = false;
+            }
+        }
     }
 }
