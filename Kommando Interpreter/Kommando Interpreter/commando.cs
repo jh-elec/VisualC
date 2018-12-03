@@ -508,7 +508,10 @@ public class Serial
             Client.Write(buff, 0, buff.Length);
             Client.Write("\r\n");
         }
-        catch { }
+        finally
+        {
+            Debug.WriteLine("Serial: " + BitConverter.ToString(buff) + " / " + buff.Length + " Bytes");
+        }
     }
 
     public UInt32[] GetBaudrates()
