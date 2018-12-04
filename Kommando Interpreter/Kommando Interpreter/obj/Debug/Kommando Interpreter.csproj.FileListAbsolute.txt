@@ -6,7 +6,6 @@ C:\Users\Jan Homann\Dropbox\C - Programmieren\VisualC\trunk\Kommando Interpreter
 C:\Users\Jan Homann\Dropbox\C - Programmieren\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.csproj.CoreCompileInputs.cache
 C:\Users\Jan Homann\Dropbox\C - Programmieren\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.exe
 C:\Users\Jan Homann\Dropbox\C - Programmieren\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.pdb
-C:\Users\Jan Homann\Dropbox\C - Programmieren\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.csprojAssemblyReference.cache
 C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\bin\Debug\Kommando Interpreter.exe.config
 C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\bin\Debug\Kommando Interpreter.exe
 C:\Users\Hm\Documents\Atmel Studio\7.0\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\bin\Debug\Kommando Interpreter.pdb

@@ -94,31 +94,38 @@ namespace Interpreter
                         cmbbx_baudrate.Enabled = true;
                         checkBox1.Checked = false;
 
+#if DEBUG
                         Debug.WriteLine("Schnittstelle wurde geschlossen..");
+#endif
                     }
                     break;
 
                 case false:
                     {
                         int PortInit = Port.Init(cmbbx_port.Text, Convert.ToInt32(cmbbx_baudrate.SelectedItem));
-
+#if DEBUG
                         Debug.WriteLine("Port Init State: " + PortInit);
-
+#endif
                         if (PortInit == 0)
                         {
                             Port.Open();
                         }
                         else
                         {
-                            Debug.WriteLine("Port Initalisierung fehlerhaft.."); 
+#if DEBUG
+                            Debug.WriteLine("Port Initalisierung fehlerhaft..");
+#endif
                         }
 
                         btn_port_open.Text = "Schließen";
                         cmbbx_port.Enabled = false;
                         cmbbx_baudrate.Enabled = false;
 
+#if DEBUG
                         Debug.WriteLine("Schnittstelle wurde geöffnet..");
-                    }break;
+#endif
+                    }
+                    break;
             }
         }
 

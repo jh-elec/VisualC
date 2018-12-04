@@ -208,6 +208,10 @@ public class Cmd
 
         if (MasterCRC == SlaveCRC)
         {
+
+#if DEBUG
+            Debug.WriteLine("Cmd(Parse()):" + "MasterCRC -> " + MasterCRC + " | " + "SlaveCRC -> " + SlaveCRC);
+#endif
             GoodFrameIncomming++;
 
             if ( SyncForm != null && SyncForm.InvokeRequired )
@@ -253,6 +257,9 @@ public class Cmd
 
         Frame[(byte)Communication_Header_Enum.CMD_HEADER_CRC] = FrameMasterCRC;
 
+#if DEBUG
+        Debug.WriteLine("Cmd(BuildHeader()): " + BitConverter.ToString(Frame, 0, Frame.Length));
+#endif
         return Frame;
     }
   
@@ -466,7 +473,9 @@ public class Serial
             }
             catch
             {
-                Debug.WriteLine("Serial Port: " + "Port cant opened");
+#if DEBUG
+                Debug.WriteLine("Serial(Open()): " + "Port cant opened");
+#endif
             }              
         }
     }
@@ -510,7 +519,9 @@ public class Serial
         }
         finally
         {
-            Debug.WriteLine("Serial: " + BitConverter.ToString(buff) + " / " + buff.Length + " Bytes");
+#if DEBUG
+            Debug.WriteLine("Serial(WriteCommando()): " + BitConverter.ToString(buff) + " / " + buff.Length + " Bytes");
+#endif
         }
     }
 
@@ -557,24 +568,8 @@ public class Serial
         return ports;
     }
 
-    public void Dispose()
-    {
-        Client.Dispose();
-    }
-
-
     public void Client_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
-        /* Protokoll
-            *
-            *  Nachrichtenlänge             : 0..255 ( 8 davon für den Header , Rest Nutzdaten.. )
-            *  Daten Type                   : 0..6
-            *  Nachrichten Identifikation   : 0..255
-            *  Funktionsrückgabe Code       : 0..255
-            *  Checksumme                   : 0..255
-            *  Nutzdaten                    : 0..255
-        */
-
         try
         {
             byte[] tmp = new byte[Client.BytesToRead];
@@ -598,24 +593,11 @@ public class Serial
             } while (RingBuff.Length > 1);
 
         }
-        catch(ArgumentException message)
-        {
-            Debug.WriteLine(message.Message);
-        }
+        catch { }
     }
 
     private void CloseSerialOnPortClose()
     {
         Client.Close(); //close the serial port
-    }
-
-    uint Position = 0;
-    private void WriteDebugBuffer( string msg , byte[] buffer, int length )
-    {
-        Position++;
-        using (System.IO.StreamWriter file = new System.IO.StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "\\log.txt", true))
-        {
-            file.WriteLine( "[" + Position.ToString() + "]" + ": " + msg + " -> " + BitConverter.ToString(buffer,0, length) + "\r\n");
-        }
     }
 }
