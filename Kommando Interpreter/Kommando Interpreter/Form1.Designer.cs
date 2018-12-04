@@ -33,6 +33,7 @@
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.richtxtbx_message = new System.Windows.Forms.RichTextBox();
             this.numeric_send_cycle_timer_interval = new System.Windows.Forms.NumericUpDown();
+            this.checkbx_send_start_bytes = new System.Windows.Forms.CheckBox();
             this.SendCycleTimer = new System.Windows.Forms.Timer(this.components);
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.dateiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -48,6 +49,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.richtxtbx_data_was_send = new System.Windows.Forms.RichTextBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
@@ -76,8 +78,6 @@
             this.label8 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.checkbx_send_start_bytes = new System.Windows.Forms.CheckBox();
-            this.label7 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_send_cycle_timer_interval)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.tabPage4.SuspendLayout();
@@ -126,6 +126,20 @@
             0,
             0,
             0});
+            // 
+            // checkbx_send_start_bytes
+            // 
+            this.checkbx_send_start_bytes.AutoSize = true;
+            this.checkbx_send_start_bytes.Checked = true;
+            this.checkbx_send_start_bytes.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkbx_send_start_bytes.Location = new System.Drawing.Point(300, 138);
+            this.checkbx_send_start_bytes.Name = "checkbx_send_start_bytes";
+            this.checkbx_send_start_bytes.Size = new System.Drawing.Size(121, 17);
+            this.checkbx_send_start_bytes.TabIndex = 17;
+            this.checkbx_send_start_bytes.Text = "Start Bytes senden?";
+            this.toolTip1.SetToolTip(this.checkbx_send_start_bytes, "\"-+\"");
+            this.checkbx_send_start_bytes.UseVisualStyleBackColor = true;
+            this.checkbx_send_start_bytes.CheckedChanged += new System.EventHandler(this.checkbx_send_start_bytes_CheckedChanged);
             // 
             // SendCycleTimer
             // 
@@ -267,6 +281,15 @@
             this.tabPage2.Size = new System.Drawing.Size(447, 195);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Senden";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(298, 106);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(125, 26);
+            this.label7.TabIndex = 18;
+            this.label7.Text = "Dient zum erkennen des \r\nneuen Frames.";
             // 
             // label6
             // 
@@ -536,27 +559,6 @@
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(455, 221);
             this.tabControl1.TabIndex = 6;
-            // 
-            // checkbx_send_start_bytes
-            // 
-            this.checkbx_send_start_bytes.AutoSize = true;
-            this.checkbx_send_start_bytes.Location = new System.Drawing.Point(300, 138);
-            this.checkbx_send_start_bytes.Name = "checkbx_send_start_bytes";
-            this.checkbx_send_start_bytes.Size = new System.Drawing.Size(121, 17);
-            this.checkbx_send_start_bytes.TabIndex = 17;
-            this.checkbx_send_start_bytes.Text = "Start Bytes senden?";
-            this.toolTip1.SetToolTip(this.checkbx_send_start_bytes, "\"-+\"");
-            this.checkbx_send_start_bytes.UseVisualStyleBackColor = true;
-            this.checkbx_send_start_bytes.CheckedChanged += new System.EventHandler(this.checkbx_send_start_bytes_CheckedChanged);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(298, 106);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(125, 26);
-            this.label7.TabIndex = 18;
-            this.label7.Text = "Dient zum erkennen des \r\nneuen Frames.";
             // 
             // Form1
             // 

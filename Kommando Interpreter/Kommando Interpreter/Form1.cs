@@ -337,6 +337,15 @@ namespace Interpreter
 
         private void btn_data_send_Click(object sender, EventArgs e)
         {
+            if (checkbx_send_start_bytes.CheckState == CheckState.Checked)
+            {
+                Port.StartBytes = true;
+            }
+            else
+            {
+                Port.StartBytes = false;
+            }
+
             SendCommando(sender, e);
         }
 
@@ -407,6 +416,15 @@ namespace Interpreter
 
         private void SendCycleTimer_Tick(object sender, EventArgs e)
         {
+            if ( checkbx_send_start_bytes.CheckState == CheckState.Checked )
+            {
+                Port.StartBytes = true;
+            }
+            else
+            {
+                Port.StartBytes = false;
+            }
+
             SendCommando(sender, e); 
         }
 
