@@ -418,7 +418,7 @@ public class Serial
         ParserInstance = Instance;
     }
 
-    Ringbuffer RingBuff = new Ringbuffer(65535);
+    public Ringbuffer RingBuff = new Ringbuffer(65535);
 
     public SerialPort Client = new SerialPort();
 

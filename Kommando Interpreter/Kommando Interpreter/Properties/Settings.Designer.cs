@@ -22,5 +22,77 @@ namespace Interpreter.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public byte EmpfangeneFrameID {
+            get {
+                return ((byte)(this["EmpfangeneFrameID"]));
+            }
+            set {
+                this["EmpfangeneFrameID"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public byte EmpfangeneFrameLänge {
+            get {
+                return ((byte)(this["EmpfangeneFrameLänge"]));
+            }
+            set {
+                this["EmpfangeneFrameLänge"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public byte EmpfangenerFrameExitcode {
+            get {
+                return ((byte)(this["EmpfangenerFrameExitcode"]));
+            }
+            set {
+                this["EmpfangenerFrameExitcode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EmpfangeneFrameIDEnable {
+            get {
+                return ((bool)(this["EmpfangeneFrameIDEnable"]));
+            }
+            set {
+                this["EmpfangeneFrameIDEnable"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EmpfangeneFrameLängeEnable {
+            get {
+                return ((bool)(this["EmpfangeneFrameLängeEnable"]));
+            }
+            set {
+                this["EmpfangeneFrameLängeEnable"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EmpfangenerFrameExitcodeEnable {
+            get {
+                return ((bool)(this["EmpfangenerFrameExitcodeEnable"]));
+            }
+            set {
+                this["EmpfangenerFrameExitcodeEnable"] = value;
+            }
+        }
     }
 }

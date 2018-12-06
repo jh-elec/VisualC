@@ -65,6 +65,21 @@ namespace Interpreter
                 cmbbx_data_typ.Items.Add((Cmd.Data_Type_Enum.DATA_TYP_UINT8 + x).ToString());
             }
             cmbbx_data_typ.SelectedItem = "DATA_TYP_UINT8";
+
+            LoadUserDefaults();
+        }
+
+        private void LoadUserDefaults()
+        {
+            toolStripMenuItem2.Text = Properties.Settings.Default.EmpfangeneFrameID.ToString();
+            toolStripMenuItem3.Text = Properties.Settings.Default.EmpfangeneFrameLänge.ToString();
+            toolStripMenuItem4.Text = Properties.Settings.Default.EmpfangenerFrameExitcode.ToString();
+
+
+            iDToolStripMenuItem.Checked = Properties.Settings.Default.EmpfangeneFrameIDEnable;
+            frameLängeToolStripMenuItem.Checked = Properties.Settings.Default.EmpfangeneFrameLängeEnable;
+            exitkodeToolStripMenuItem.Checked = Properties.Settings.Default.EmpfangenerFrameExitcodeEnable;
+
         }
 
         public Form1()
@@ -138,6 +153,50 @@ namespace Interpreter
                 listView1.Items.Clear();
             }
 
+            try
+            {
+                DialogResult UserResult = new DialogResult();
+                if ( byte.Parse(toolStripMenuItem2.Text) == Parsed.MessageID && iDToolStripMenuItem.CheckState == CheckState.Checked )
+                {
+                    if ( checkBox1.CheckState == CheckState.Checked )
+                    {
+                        UserResult = MessageBox.Show("Eingestellte \"ID\" empfangen!\r\nZyklisch senden beenden?", "Benachrichtigung", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        UserResult = MessageBox.Show("Eingestellte \"ID\" empfangen!", "Benachrichtigung", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                if (byte.Parse(toolStripMenuItem3.Text) == Parsed.DataLength && frameLängeToolStripMenuItem.CheckState == CheckState.Checked )
+                {
+                    if ( checkBox1.CheckState == CheckState.Checked )
+                    {
+                       UserResult = MessageBox.Show("Eingestellte \"Frame Länge\" empfangen!\r\nZyklisch senden beenden?", "Benachrichtigung", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        UserResult = MessageBox.Show("Eingestellte \"Frame Länge\" empfangen!", "Benachrichtigung", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                if (byte.Parse(toolStripMenuItem4.Text) == Parsed.Exitcode && exitkodeToolStripMenuItem.CheckState == CheckState.Checked )
+                {
+                    if ( checkBox1.CheckState == CheckState.Checked )
+                    {
+                        UserResult = MessageBox.Show("Eingestellten \"Exitcode\" empfangen!\r\nZyklisch senden beenden?", "Benachrichtigung", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                    }
+                    else
+                    {
+                        UserResult = MessageBox.Show("Eingestellten \"Exitcode\" empfangen!", "Benachrichtigung", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+
+                if ( UserResult == DialogResult.Yes )
+                {
+                    checkBox1.Checked = false;
+                    Port.RingBuff.Clear();
+                }
+            }
+            finally { }
 
             switch (Parsed.DataType)
             {
@@ -402,6 +461,16 @@ namespace Interpreter
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            Properties.Settings.Default.EmpfangeneFrameID = Convert.ToByte(toolStripMenuItem2.Text);
+            Properties.Settings.Default.EmpfangeneFrameLänge = Convert.ToByte(toolStripMenuItem3.Text);
+            Properties.Settings.Default.EmpfangenerFrameExitcode = Convert.ToByte(toolStripMenuItem4.Text);
+
+            Properties.Settings.Default.EmpfangeneFrameIDEnable = iDToolStripMenuItem.Checked;
+            Properties.Settings.Default.EmpfangeneFrameLängeEnable = frameLängeToolStripMenuItem.Checked;
+            Properties.Settings.Default.EmpfangenerFrameExitcodeEnable = exitkodeToolStripMenuItem.Checked;
+
+            Properties.Settings.Default.Save();
+
             Port.Close();
         }
 
@@ -496,6 +565,84 @@ namespace Interpreter
             else
             {
                 Port.StartBytes = false;
+            }
+        }
+
+        private void toolStripMenuItem2_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar >= '0' && e.KeyChar <= '9')
+            {
+                e.Handled = false;
+            }
+            else
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void toolStripMenuItem3_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar >= '0' && e.KeyChar <= '9')
+            {
+                e.Handled = false;
+            }
+            else
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void toolStripMenuItem4_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar >= '0' && e.KeyChar <= '9')
+            {
+                e.Handled = false;
+            }
+            else
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void aktiviertToolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            if (exitkodeToolStripMenuItem.CheckState == CheckState.Checked)
+            {
+                exitkodeToolStripMenuItem.CheckState = CheckState.Unchecked;
+                aktiviertToolStripMenuItem2.Text = "Aktivieren";
+            }
+            else
+            {
+                exitkodeToolStripMenuItem.CheckState = CheckState.Checked;
+                aktiviertToolStripMenuItem2.Text = "Deaktivieren";
+            }
+        }
+
+        private void aktiviertToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (frameLängeToolStripMenuItem.CheckState == CheckState.Checked)
+            {
+                frameLängeToolStripMenuItem.CheckState = CheckState.Unchecked;
+                aktiviertToolStripMenuItem1.Text = "Aktivieren";
+            }
+            else
+            {
+                frameLängeToolStripMenuItem.CheckState = CheckState.Checked;
+                aktiviertToolStripMenuItem1.Text = "Deaktivieren";
+            }
+        }
+
+        private void aktiviertToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (iDToolStripMenuItem.CheckState == CheckState.Checked)
+            {
+                iDToolStripMenuItem.CheckState = CheckState.Unchecked;
+                aktiviertToolStripMenuItem.Text = "Aktivieren";
+            }
+            else
+            {
+                iDToolStripMenuItem.CheckState = CheckState.Checked;
+                aktiviertToolStripMenuItem.Text = "Deaktivieren";
             }
         }
     }

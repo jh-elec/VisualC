@@ -27,3 +27,4 @@ C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj
 C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.csproj.CoreCompileInputs.cache
 C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.exe
 C:\Users\Jan\Desktop\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.pdb
+C:\Users\Jan Homann\Dropbox\C - Programmieren\VisualC\trunk\Kommando Interpreter\Kommando Interpreter\obj\Debug\Kommando Interpreter.csprojAssemblyReference.cache

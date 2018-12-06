@@ -41,6 +41,11 @@
             this.bugMeldenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.meldungenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.messageBoxAnzeigenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.beiBestimmtenFrameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.iDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripTextBox();
+            this.frameLängeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitkodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.panel1 = new System.Windows.Forms.Panel();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -78,6 +83,14 @@
             this.label8 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripTextBox();
+            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripTextBox();
+            this.aktiviertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aktiviertToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.aktiviertToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_send_cycle_timer_interval)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.tabPage4.SuspendLayout();
@@ -183,7 +196,8 @@
             // meldungenToolStripMenuItem
             // 
             this.meldungenToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.messageBoxAnzeigenToolStripMenuItem});
+            this.messageBoxAnzeigenToolStripMenuItem,
+            this.beiBestimmtenFrameToolStripMenuItem});
             this.meldungenToolStripMenuItem.Name = "meldungenToolStripMenuItem";
             this.meldungenToolStripMenuItem.Size = new System.Drawing.Size(80, 20);
             this.meldungenToolStripMenuItem.Text = "Meldungen";
@@ -194,6 +208,53 @@
             this.messageBoxAnzeigenToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
             this.messageBoxAnzeigenToolStripMenuItem.Text = "Bei neuen Daten, Fenster in den Vordergrund rufen?";
             this.messageBoxAnzeigenToolStripMenuItem.Click += new System.EventHandler(this.messageBoxAnzeigenToolStripMenuItem_Click);
+            // 
+            // beiBestimmtenFrameToolStripMenuItem
+            // 
+            this.beiBestimmtenFrameToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.iDToolStripMenuItem,
+            this.frameLängeToolStripMenuItem,
+            this.exitkodeToolStripMenuItem});
+            this.beiBestimmtenFrameToolStripMenuItem.Name = "beiBestimmtenFrameToolStripMenuItem";
+            this.beiBestimmtenFrameToolStripMenuItem.Size = new System.Drawing.Size(345, 22);
+            this.beiBestimmtenFrameToolStripMenuItem.Text = "Bei bestimmten Frame Inhalt";
+            // 
+            // iDToolStripMenuItem
+            // 
+            this.iDToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem2,
+            this.toolStripSeparator3,
+            this.aktiviertToolStripMenuItem});
+            this.iDToolStripMenuItem.Name = "iDToolStripMenuItem";
+            this.iDToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.iDToolStripMenuItem.Text = "ID";
+            // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(180, 23);
+            this.toolStripMenuItem2.Text = "0";
+            this.toolStripMenuItem2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.toolStripMenuItem2_KeyPress);
+            // 
+            // frameLängeToolStripMenuItem
+            // 
+            this.frameLängeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem3,
+            this.toolStripSeparator2,
+            this.aktiviertToolStripMenuItem1});
+            this.frameLängeToolStripMenuItem.Name = "frameLängeToolStripMenuItem";
+            this.frameLängeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.frameLängeToolStripMenuItem.Text = "Anzahl Nutzdaten";
+            // 
+            // exitkodeToolStripMenuItem
+            // 
+            this.exitkodeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem4,
+            this.toolStripSeparator1,
+            this.aktiviertToolStripMenuItem2});
+            this.exitkodeToolStripMenuItem.Name = "exitkodeToolStripMenuItem";
+            this.exitkodeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exitkodeToolStripMenuItem.Text = "Exitcode";
             // 
             // notifyIcon1
             // 
@@ -560,6 +621,56 @@
             this.tabControl1.Size = new System.Drawing.Size(455, 221);
             this.tabControl1.TabIndex = 6;
             // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(180, 23);
+            this.toolStripMenuItem3.Text = "0";
+            this.toolStripMenuItem3.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.toolStripMenuItem3_KeyPress);
+            // 
+            // toolStripMenuItem4
+            // 
+            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(180, 23);
+            this.toolStripMenuItem4.Text = "0";
+            this.toolStripMenuItem4.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.toolStripMenuItem4_KeyPress);
+            // 
+            // aktiviertToolStripMenuItem
+            // 
+            this.aktiviertToolStripMenuItem.Name = "aktiviertToolStripMenuItem";
+            this.aktiviertToolStripMenuItem.Size = new System.Drawing.Size(240, 22);
+            this.aktiviertToolStripMenuItem.Text = "Aktivieren";
+            this.aktiviertToolStripMenuItem.Click += new System.EventHandler(this.aktiviertToolStripMenuItem_Click);
+            // 
+            // aktiviertToolStripMenuItem1
+            // 
+            this.aktiviertToolStripMenuItem1.Name = "aktiviertToolStripMenuItem1";
+            this.aktiviertToolStripMenuItem1.Size = new System.Drawing.Size(240, 22);
+            this.aktiviertToolStripMenuItem1.Text = "Aktivieren";
+            this.aktiviertToolStripMenuItem1.Click += new System.EventHandler(this.aktiviertToolStripMenuItem1_Click);
+            // 
+            // aktiviertToolStripMenuItem2
+            // 
+            this.aktiviertToolStripMenuItem2.Name = "aktiviertToolStripMenuItem2";
+            this.aktiviertToolStripMenuItem2.Size = new System.Drawing.Size(240, 22);
+            this.aktiviertToolStripMenuItem2.Text = "Aktivieren";
+            this.aktiviertToolStripMenuItem2.Click += new System.EventHandler(this.aktiviertToolStripMenuItem2_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(237, 6);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(237, 6);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(237, 6);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -652,6 +763,19 @@
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.CheckBox checkbx_send_start_bytes;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.ToolStripMenuItem beiBestimmtenFrameToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem iDToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem frameLängeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exitkodeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripTextBox toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripTextBox toolStripMenuItem3;
+        private System.Windows.Forms.ToolStripTextBox toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem aktiviertToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem aktiviertToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripMenuItem aktiviertToolStripMenuItem2;
     }
 }
 
